@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --background-color: #ffffff;
+            --text-color: #000000;
+            --border-color: #000000;
+            --hover-color: #f0f0f0;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s;
+        }
+
+        .hidden { display: none !important; }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        /* --- Login Screen --- */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: var(--background-color);
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .login-box h1 {
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        /* --- Main App --- */
+        #app-container {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            grid-template-rows: auto 1fr;
+            grid-template-areas:
+                "header header"
+                "sidebar main";
+            gap: 20px;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            grid-area: header;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 { font-size: 1.8rem; }
+
+        .header-actions button { margin-left: 10px; }
+
+        nav {
+            grid-area: sidebar;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav button {
+            text-align: left;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+        }
+
+        main {
+            grid-area: main;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .page {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Common Elements --- */
+        input, select, button {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+        }
+        
+        button.primary {
+            background-color: var(--text-color);
+            color: var(--background-color);
+        }
+
+        button.primary:hover {
+            background-color: #333;
+        }
+        
+        .card {
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        h2 { margin-bottom: 20px; }
+        
+        /* --- Dashboard --- */
+        #search-bar { margin-bottom: 20px; }
+        
+        .product-list {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+
+        .product-card {
+            padding: 15px;
+            position: relative;
+        }
+        
+        .product-card h3 { margin-bottom: 5px; }
+        .product-card p { margin-bottom: 10px; color: #555; }
+        .product-card .price { font-weight: bold; font-size: 1.2rem; }
+        .product-card .top-product-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        /* --- Invoice Page --- */
+        #invoice-page .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        #invoice-items-list { margin-top: 20px; }
+        
+        .invoice-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .invoice-item span { flex: 1; }
+        
+        #invoice-total {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* NEW: Invoice Product Search */
+        .search-container {
+            position: relative;
+        }
+        .search-results {
+            position: absolute;
+            width: 100%;
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-top: -16px; 
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--box-shadow);
+        }
+        .search-result-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        .search-result-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--background-color);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        /* --- Reports & History --- */
+        .report-summary, .history-item {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+        }
+        
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            #app-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+                grid-template-areas:
+                    "header"
+                    "sidebar"
+                    "main";
+                height: auto;
+                padding: 10px;
+            }
+            
+            nav {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            nav button {
+                flex-shrink: 0;
+                margin-right: 10px;
+            }
+            
+            main {
+                overflow-y: visible;
+            }
+
+            #invoice-page .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-actions { display: none; }
+        }
+        
+        /* --- Invoice for PDF --- */
+        #invoice-pdf {
+            display: none;
+            padding: 30px;
+            color: #000;
+            background: #fff;
+        }
+        #invoice-pdf h1 { margin-bottom: 10px; }
+        #invoice-pdf h2 { font-size: 1.2rem; margin-bottom: 20px; }
+        #invoice-pdf .customer-details, #invoice-pdf .invoice-details { margin-bottom: 20px; }
+        #invoice-pdf table { width: 100%; border-collapse: collapse; }
+        #invoice-pdf th, #invoice-pdf td { border: 1px solid #000; padding: 8px; text-align: left; }
+        #invoice-pdf th { background: #f0f0f0; }
+        #invoice-pdf .total { margin-top: 20px; text-align: right; font-size: 1.2rem; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h1 id="login-title">Login</h1>
+            <p id="login-error" class="hidden" style="color:red; margin-bottom:10px;"></p>
+            <input type="password" id="password-input" placeholder="Enter Password">
+            <button id="login-button" class="primary">Enter</button>
+        </div>
+    </div>
+
+    <div id="app-container" class="hidden">
+        <header>
+            <h1>Dashboard</h1>
+            <div class="header-actions">
+                <button id="lock-button">Lock (Shift+L)</button>
+                <button id="change-password-btn">Change Password</button>
+            </div>
+        </header>
+
+        <nav>
+            <button class="nav-button active" data-page="dashboard-page">Dashboard</button>
+            <button class="nav-button" data-page="invoice-page">New Invoice</button>
+            <button class="nav-button" data-page="products-page">Products</button>
+            <button class="nav-button" data-page="reports-page">Reports</button>
+            <button class="nav-button" data-page="history-page">History</button>
+        </nav>
+
+        <main>
+            <div id="dashboard-page" class="page">
+                <input type="text" id="search-bar" placeholder="Search by name or code... (/)">
+                <div class="card">
+                    <h2>Top Products</h2>
+                    <div id="top-products-list" class="product-list"></div>
+                </div>
+                <div class="card">
+                    <h2>All Products</h2>
+                    <div id="all-products-list" class="product-list"></div>
+                </div>
+            </div>
+
+            <div id="invoice-page" class="page hidden">
+                <div class="card">
+                    <h2>Create Invoice</h2>
+                    <div class="form-grid">
+                        <input type="text" id="customer-name" placeholder="Customer Name">
+                        <input type="text" id="customer-phone" placeholder="Customer Phone (for WhatsApp)">
+                    </div>
+                    
+                    <div class="form-grid">
+                         <div class="search-container">
+                            <input type="text" id="invoice-product-search" placeholder="Search product by name or code..." autocomplete="off">
+                            <input type="hidden" id="selected-product-id">
+                            <div id="invoice-product-results" class="search-results hidden"></div>
+                        </div>
+                        <input type="number" id="invoice-quantity" placeholder="Quantity" min="1" value="1">
+                    </div>
+                    <button id="add-to-invoice-btn">Add Product</button>
+                    
+                    <h3>Invoice Items</h3>
+                    <div id="invoice-items-list"></div>
+                    
+                    <div id="invoice-total">Total: Rs. 0.00</div>
+                    
+                    <div class="form-grid" style="margin-top: 20px;">
+                        <button id="save-invoice-btn">Save (S)</button>
+                        <button id="whatsapp-share-btn" class="primary">Share via WhatsApp (W)</button>
+                        <button id="export-pdf-btn">Export as PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="products-page" class="page hidden">
+                <button id="add-product-btn" class="primary">Add New Product (Shift+A)</button>
+                <div id="manage-products-list" style="margin-top: 20px;"></div>
+            </div>
+
+            <div id="reports-page" class="page hidden">
+                <div class="card">
+                    <h2>Sales Reports</h2>
+                    <div class="report-summary">
+                        <h3>Today's Sales</h3>
+                        <p id="daily-sales">Rs. 0.00</p>
+                    </div>
+                    <div class="report-summary">
+                        <h3>This Week's Sales</h3>
+                        <p id="weekly-sales">Rs. 0.00</p>
+                    </div>
+                    <div class="report-summary">
+                        <h3>This Month's Sales</h3>
+                        <p id="monthly-sales">Rs. 0.00</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="history-page" class="page hidden">
+                <div class="card">
+                    <h2>Invoice History</h2>
+                    <div id="invoice-history-list"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="product-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">Add Product</h2>
+            <input type="hidden" id="product-id">
+            <input type="text" id="product-name" placeholder="Product Name" required>
+            <input type="text" id="product-code" placeholder="Product Code" required>
+            <input type="number" id="product-price" placeholder="Price" required>
+            <input type="text" id="product-size" placeholder="Size (e.g., S, M, L)" required>
+            <input type="number" id="product-quantity" placeholder="Quantity" required>
+            <button id="save-product-btn" class="primary">Save Product</button>
+            <button id="cancel-product-btn">Cancel</button>
+        </div>
+    </div>
+    
+    <div id="change-password-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Change Password</h2>
+            <p id="password-change-error" class="hidden" style="color:red; margin-bottom:10px;"></p>
+            <input type="password" id="current-password-input" placeholder="Current Password" required>
+            <input type="password" id="new-password-input" placeholder="New Password (min 4 chars)" required>
+            <input type="password" id="confirm-new-password-input" placeholder="Confirm New Password" required>
+            <button id="save-new-password-btn" class="primary">Save New Password</button>
+            <button id="cancel-password-change-btn">Cancel</button>
+        </div>
+    </div>
+
+    <div id="invoice-pdf">
+        <h1>INVOICE</h1>
+        <div class="customer-details">
+            <h2>Billed To:</h2>
+            <p id="pdf-customer-name"></p>
+            <p id="pdf-customer-phone"></p>
+        </div>
+        <div class="invoice-details">
+            <h2>Invoice Details:</h2>
+            <p>Invoice ID: <span id="pdf-invoice-id"></span></p>
+            <p>Date: <span id="pdf-invoice-date"></span></p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-invoice-items"></tbody>
+        </table>
+        <div class="total">
+            Total: <span id="pdf-invoice-total"></span>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STATE MANAGEMENT ---
+            let state = {
+                products: JSON.parse(localStorage.getItem('products')) || [], 
+                invoices: JSON.parse(localStorage.getItem('invoices')) || [],
+                currentInvoice: {
+                    customerName: '',
+                    customerPhone: '',
+                    items: [],
+                    total: 0
+                }
+            };
+            
+            // --- PASSWORD MANAGEMENT ---
+            let userPassword = localStorage.getItem('appPassword');
+            
+            // --- DOM ELEMENTS (Password Management) ---
+            const loginTitle = document.getElementById('login-title');
+            const passwordInput = document.getElementById('password-input');
+            const changePasswordBtn = document.getElementById('change-password-btn');
+            const changePasswordModal = document.getElementById('change-password-modal');
+            const saveNewPasswordBtn = document.getElementById('save-new-password-btn');
+            const cancelPasswordChangeBtn = document.getElementById('cancel-password-change-btn');
+            const currentPasswordInput = document.getElementById('current-password-input');
+            const newPasswordInput = document.getElementById('new-password-input');
+            const confirmNewPasswordInput = document.getElementById('confirm-new-password-input');
+            const passwordChangeError = document.getElementById('password-change-error');
+            
+            // --- DOM ELEMENTS (rest of the elements remain the same) ---
+            const loginScreen = document.getElementById('login-screen');
+            const appContainer = document.getElementById('app-container');
+            const loginButton = document.getElementById('login-button');
+            const loginError = document.getElementById('login-error');
+            const lockButton = document.getElementById('lock-button');
+            const mainHeader = document.querySelector('header h1');
+            const navButtons = document.querySelectorAll('.nav-button');
+            const pages = document.querySelectorAll('.page');
+            const searchBar = document.getElementById('search-bar');
+            
+            // Invoice product search elements
+            const invoiceProductSearch = document.getElementById('invoice-product-search');
+            const selectedProductIdInput = document.getElementById('selected-product-id');
+            const invoiceProductResults = document.getElementById('invoice-product-results');
+            
+            // Product Modal
+            const productModal = document.getElementById('product-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const saveProductBtn = document.getElementById('save-product-btn');
+            const cancelProductBtn = document.getElementById('cancel-product-btn');
+            
+            // --- LOCAL STORAGE ---
+            const syncStorage = () => {
+                localStorage.setItem('products', JSON.stringify(state.products));
+                localStorage.setItem('invoices', JSON.stringify(state.invoices));
+            };
+
+            // --- RENDERING FUNCTIONS (No changes needed) ---
+            const renderProducts = (searchTerm = '') => {
+                const allProductsList = document.getElementById('all-products-list');
+                const topProductsList = document.getElementById('top-products-list');
+                const manageProductsList = document.getElementById('manage-products-list');
+                
+                allProductsList.innerHTML = '';
+                topProductsList.innerHTML = '';
+                manageProductsList.innerHTML = '';
+                
+                const filteredProducts = state.products.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    p.code.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                
+                if (state.products.length === 0) {
+                    allProductsList.innerHTML = '<p>No products found. Go to the Products page to add your inventory.</p>';
+                    manageProductsList.innerHTML = ''; 
+                    topProductsList.innerHTML = '<p>No top products.</p>';
+                    return;
+                }
+                
+                if (filteredProducts.length === 0 && searchTerm) {
+                    allProductsList.innerHTML = '<p>No products match your search.</p>';
+                }
+
+                (searchTerm ? filteredProducts : state.products).forEach(product => {
+                    const productCardHTML = `
+                        <div class="product-card card" data-id="${product.id}">
+                            <h3>${product.name}</h3>
+                            <p>Code: ${product.code} | Size: ${product.size}</p>
+                            <p>Stock: ${product.quantity}</p>
+                            <p class="price">Rs. ${product.price.toFixed(2)}</p>
+                            <span class="top-product-icon" title="Mark as Top Product (T)">${product.isTop ? '★' : '☆'}</span>
+                        </div>`;
+
+                    if (product.isTop && !searchTerm) {
+                        topProductsList.innerHTML += productCardHTML;
+                    }
+                    allProductsList.innerHTML += productCardHTML;
+
+                    manageProductsList.innerHTML += `
+                        <div class="card" style="display:flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3>${product.name} (Code: ${product.code})</h3>
+                                <p>Price: Rs. ${product.price.toFixed(2)} | Stock: ${product.quantity}</p>
+                            </div>
+                            <div>
+                                <button class="edit-product-btn" data-id="${product.id}">Edit</button>
+                                <button class="delete-product-btn" data-id="${product.id}" style="margin-left: 10px;">Delete (Shift+D)</button>
+                            </div>
+                        </div>`;
+                });
+                
+                if (topProductsList.innerHTML === '') {
+                    topProductsList.innerHTML = '<p>No products are currently marked as top products.</p>';
+                }
+            };
+            
+            const renderInvoiceItems = () => {
+                const list = document.getElementById('invoice-items-list');
+                const totalEl = document.getElementById('invoice-total');
+                list.innerHTML = '';
+                state.currentInvoice.total = 0;
+
+                if (state.currentInvoice.items.length === 0) {
+                    list.innerHTML = '<p>No items added yet.</p>';
+                }
+
+                state.currentInvoice.items.forEach((item, index) => {
+                    const product = state.products.find(p => p.id === item.productId);
+                    if (!product) return;
+                    
+                    const itemTotal = item.quantity * product.price;
+                    state.currentInvoice.total += itemTotal;
+                    
+                    list.innerHTML += `
+                        <div class="invoice-item">
+                            <span>${product.name}</span>
+                            <span>Qty: ${item.quantity}</span>
+                            <span>Rs. ${itemTotal.toFixed(2)}</span>
+                            <button class="remove-invoice-item-btn" data-index="${index}" style="width: auto; padding: 5px 10px;">X</button>
+                        </div>`;
+                });
+                
+                totalEl.textContent = `Total: Rs. ${state.currentInvoice.total.toFixed(2)}`;
+            };
+            
+            const renderReports = () => {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                const startOfWeek = today - (now.getDay() * 24 * 60 * 60 * 1000);
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+                const dailySales = state.invoices.filter(inv => new Date(inv.date).getTime() >= today).reduce((sum, inv) => sum + inv.total, 0);
+                const weeklySales = state.invoices.filter(inv => new Date(inv.date).getTime() >= startOfWeek).reduce((sum, inv) => sum + inv.total, 0);
+                const monthlySales = state.invoices.filter(inv => new Date(inv.date).getTime() >= startOfMonth).reduce((sum, inv) => sum + inv.total, 0);
+
+                document.getElementById('daily-sales').textContent = `Rs. ${dailySales.toFixed(2)}`;
+                document.getElementById('weekly-sales').textContent = `Rs. ${weeklySales.toFixed(2)}`;
+                document.getElementById('monthly-sales').textContent = `Rs. ${monthlySales.toFixed(2)}`;
+            };
+
+            const renderHistory = () => {
+                const list = document.getElementById('invoice-history-list');
+                list.innerHTML = '';
+                if(state.invoices.length === 0){
+                    list.innerHTML = '<p>No past invoices found.</p>';
+                    return;
+                }
+                [...state.invoices].reverse().forEach(inv => {
+                    list.innerHTML += `
+                        <div class="history-item">
+                            <p><strong>Invoice ID:</strong> ${inv.id}</p>
+                            <p><strong>Customer:</strong> ${inv.customerName}</p>
+                            <p><strong>Date:</strong> ${new Date(inv.date).toLocaleString()}</p>
+                            <p><strong>Total:</strong> Rs. ${inv.total.toFixed(2)}</p>
+                        </div>`;
+                });
+            };
+
+            // --- LOGIC FUNCTIONS ---
+            
+            // Password Setting/Verification
+            const initializeLoginScreen = () => {
+                if (!userPassword) {
+                    loginTitle.textContent = 'Set Your Password';
+                    passwordInput.placeholder = 'Create New Password';
+                    document.getElementById('login-button').textContent = 'Set & Enter';
+                    document.getElementById('login-error').textContent = 'This is your first time. Please set a password.';
+                    document.getElementById('login-error').classList.remove('hidden');
+                } else {
+                    loginTitle.textContent = 'Login';
+                    passwordInput.placeholder = 'Enter Password';
+                    document.getElementById('login-button').textContent = 'Enter';
+                    document.getElementById('login-error').textContent = 'Incorrect Password';
+                    document.getElementById('login-error').classList.add('hidden');
+                }
+            };
+            
+            const handleLogin = () => {
+                const enteredPassword = passwordInput.value;
+                loginError.classList.add('hidden');
+                
+                if (!userPassword) {
+                    // First time: Set the password
+                    if (enteredPassword.length < 4) {
+                        loginError.textContent = 'Password must be at least 4 characters.';
+                        loginError.classList.remove('hidden');
+                        return;
+                    }
+                    localStorage.setItem('appPassword', enteredPassword);
+                    userPassword = enteredPassword; // Update runtime variable
+                    
+                    alert('Password set successfully! You are now logged in.');
+
+                } else {
+                    // Subsequent times: Verify the password
+                    if (enteredPassword !== userPassword) {
+                        loginError.textContent = 'Incorrect Password';
+                        loginError.classList.remove('hidden');
+                        return;
+                    }
+                }
+                
+                // If successful (either set or verified)
+                loginScreen.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                passwordInput.value = '';
+                renderAll();
+            };
+
+            // NEW: Change Password Modal Handlers
+            const openChangePasswordModal = () => {
+                currentPasswordInput.value = '';
+                newPasswordInput.value = '';
+                confirmNewPasswordInput.value = '';
+                passwordChangeError.classList.add('hidden');
+
+                changePasswordModal.classList.remove('hidden');
+                currentPasswordInput.focus();
+            };
+
+            const closeChangePasswordModal = () => {
+                changePasswordModal.classList.add('hidden');
+            };
+
+            const handleChangePassword = () => {
+                const current = currentPasswordInput.value;
+                const newPass = newPasswordInput.value;
+                const confirmNew = confirmNewPasswordInput.value;
+                passwordChangeError.classList.add('hidden');
+
+                if (current !== userPassword) {
+                    passwordChangeError.textContent = 'Error: Incorrect Current Password.';
+                    passwordChangeError.classList.remove('hidden');
+                    return;
+                }
+
+                if (newPass.length < 4) {
+                    passwordChangeError.textContent = 'Error: New Password must be at least 4 characters.';
+                    passwordChangeError.classList.remove('hidden');
+                    return;
+                }
+
+                if (newPass !== confirmNew) {
+                    passwordChangeError.textContent = 'Error: New passwords do not match.';
+                    passwordChangeError.classList.remove('hidden');
+                    return;
+                }
+                
+                if (current === newPass) {
+                    passwordChangeError.textContent = 'Error: New password cannot be the same as the current password.';
+                    passwordChangeError.classList.remove('hidden');
+                    return;
+                }
+
+                // Success: Update password
+                localStorage.setItem('appPassword', newPass);
+                userPassword = newPass; // Update runtime variable
+                
+                closeChangePasswordModal();
+                alert('Password changed successfully!');
+            };
+            
+            const handleLogout = () => {
+                loginScreen.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+                initializeLoginScreen(); // Re-initialize the login screen state
+            };
+            
+            const switchPage = (pageId) => {
+                pages.forEach(p => p.classList.add('hidden'));
+                document.getElementById(pageId).classList.remove('hidden');
+                
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                const activeButton = document.querySelector(`.nav-button[data-page="${pageId}"]`);
+                if(activeButton) activeButton.classList.add('active');
+                
+                mainHeader.textContent = activeButton.textContent;
+            };
+
+            const openProductModal = (product = null) => {
+                modalTitle.textContent = product ? 'Edit Product' : 'Add Product';
+                document.getElementById('product-id').value = product ? product.id : '';
+                document.getElementById('product-name').value = product ? product.name : '';
+                document.getElementById('product-code').value = product ? product.code : '';
+                document.getElementById('product-price').value = product ? product.price : '';
+                document.getElementById('product-size').value = product ? product.size : '';
+                document.getElementById('product-quantity').value = product ? product.quantity : '';
+                productModal.classList.remove('hidden');
+                document.getElementById('product-name').focus();
+            };
+            
+            const closeProductModal = () => {
+                productModal.classList.add('hidden');
+            };
+
+            const saveProduct = () => {
+                const id = document.getElementById('product-id').value;
+                const newProduct = {
+                    id: id ? parseInt(id) : Date.now(),
+                    name: document.getElementById('product-name').value, code: document.getElementById('product-code').value,
+                    price: parseFloat(document.getElementById('product-price').value), size: document.getElementById('product-size').value,
+                    quantity: parseInt(document.getElementById('product-quantity').value),
+                    isTop: id ? state.products.find(p => p.id === parseInt(id)).isTop : false
+                };
+                if (!newProduct.name || !newProduct.code || isNaN(newProduct.price) || isNaN(newProduct.quantity)) {
+                    alert('Please fill all fields correctly.'); return;
+                }
+                if (id) { state.products = state.products.map(p => p.id === newProduct.id ? newProduct : p); } 
+                else { state.products.push(newProduct); }
+                syncStorage(); renderAll(); closeProductModal();
+            };
+
+            const deleteProduct = (id) => {
+                if (confirm('Are you sure you want to delete this product?')) {
+                    state.products = state.products.filter(p => p.id !== id);
+                    syncStorage(); renderAll();
+                }
+            };
+
+            const toggleTopProduct = (id) => {
+                const product = state.products.find(p => p.id === id);
+                if(product) { product.isTop = !product.isTop; syncStorage(); renderAll(); }
+            };
+            
+            const addToInvoice = () => {
+                const productId = parseInt(selectedProductIdInput.value);
+                const quantity = parseInt(document.getElementById('invoice-quantity').value);
+                const product = state.products.find(p => p.id === productId);
+
+                if (!productId || isNaN(quantity) || quantity <= 0) {
+                    alert('Please search and select a product, and enter a valid quantity.'); return;
+                }
+                if (quantity > product.quantity) {
+                    alert(`Not enough stock. Only ${product.quantity} available.`); return;
+                }
+                
+                const existingItem = state.currentInvoice.items.find(item => item.productId === productId);
+                if (existingItem) { existingItem.quantity += quantity; } 
+                else { state.currentInvoice.items.push({ productId, quantity }); }
+                
+                renderInvoiceItems();
+                // Clear inputs for next item
+                invoiceProductSearch.value = '';
+                selectedProductIdInput.value = '';
+                document.getElementById('invoice-quantity').value = 1;
+                invoiceProductSearch.focus();
+            };
+
+            const removeLatestInvoiceItem = () => {
+                if(state.currentInvoice.items.length > 0) {
+                    state.currentInvoice.items.pop(); renderInvoiceItems();
+                }
+            };
+
+            const clearInvoiceForm = () => {
+                state.currentInvoice = { customerName: '', customerPhone: '', items: [], total: 0 };
+                document.getElementById('customer-name').value = '';
+                document.getElementById('customer-phone').value = '';
+                invoiceProductSearch.value = ''; // Clear search
+                selectedProductIdInput.value = '';
+                document.getElementById('invoice-quantity').value = 1;
+                renderInvoiceItems();
+            };
+            
+            const saveInvoice = () => {
+                const customerName = document.getElementById('customer-name').value.trim();
+                const customerPhone = document.getElementById('customer-phone').value.trim();
+                
+                if (state.currentInvoice.items.length === 0) { alert('Cannot save an empty invoice.'); return; }
+                if (!customerName) { alert('Please enter a customer name.'); return; }
+
+                state.currentInvoice.items.forEach(item => {
+                    const product = state.products.find(p => p.id === item.productId);
+                    if (product) { product.quantity -= item.quantity; }
+                });
+
+                const newInvoice = {
+                    id: `INV-${Date.now()}`, date: new Date().toISOString(), customerName, customerPhone,
+                    items: state.currentInvoice.items, total: state.currentInvoice.total
+                };
+                
+                state.invoices.push(newInvoice); syncStorage();
+                alert('Invoice saved successfully!');
+                clearInvoiceForm(); renderAll();
+                return newInvoice;
+            };
+
+            const shareOnWhatsApp = () => {
+                const customerPhone = document.getElementById('customer-phone').value.trim();
+                if (state.currentInvoice.items.length === 0 || !customerPhone) {
+                    alert('Please add items and enter a customer phone number to share.'); return;
+                }
+                let message = `*INVOICE*\n\n*Customer:* ${document.getElementById('customer-name').value}\n----------------------\n`;
+                state.currentInvoice.items.forEach(item => {
+                    const product = state.products.find(p => p.id === item.productId);
+                    message += `${product.name} (x${item.quantity}) - Rs. ${(product.price * item.quantity).toFixed(2)}\n`;
+                });
+                message += `----------------------\n*Total: Rs. ${state.currentInvoice.total.toFixed(2)}*`;
+                window.open(`https://wa.me/${customerPhone}?text=${encodeURIComponent(message)}`, '_blank');
+            };
+
+            const exportAsPDF = () => {
+                const invoice = saveInvoice();
+                if (!invoice) return;
+                document.getElementById('pdf-customer-name').textContent = `Name: ${invoice.customerName}`;
+                document.getElementById('pdf-customer-phone').textContent = `Phone: ${invoice.customerPhone}`;
+                document.getElementById('pdf-invoice-id').textContent = invoice.id;
+                document.getElementById('pdf-invoice-date').textContent = new Date(invoice.date).toLocaleDateString();
+                const itemsTbody = document.getElementById('pdf-invoice-items');
+                itemsTbody.innerHTML = '';
+                invoice.items.forEach(item => {
+                    const product = state.products.find(p => p.id === item.productId);
+                    itemsTbody.innerHTML += `<tr><td>${product.name} (${product.code})</td><td>${item.quantity}</td><td>Rs. ${product.price.toFixed(2)}</td><td>Rs. ${(item.quantity * product.price).toFixed(2)}</td></tr>`;
+                });
+                document.getElementById('pdf-invoice-total').textContent = `Rs. ${invoice.total.toFixed(2)}`;
+                const invoiceElement = document.getElementById('invoice-pdf');
+                invoiceElement.style.display = 'block';
+                html2canvas(invoiceElement).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF();
+                    const imgProps= pdf.getImageProperties(imgData);
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save(`${invoice.id}.pdf`);
+                    invoiceElement.style.display = 'none';
+                });
+            };
+
+            // --- EVENT LISTENERS ---
+            loginButton.addEventListener('click', handleLogin);
+            passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+            
+            // NEW: Password Change Listeners
+            changePasswordBtn.addEventListener('click', openChangePasswordModal);
+            cancelPasswordChangeBtn.addEventListener('click', closeChangePasswordModal);
+            saveNewPasswordBtn.addEventListener('click', handleChangePassword);
+            confirmNewPasswordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleChangePassword();
+            });
+
+            lockButton.addEventListener('click', handleLogout);
+            navButtons.forEach(button => button.addEventListener('click', () => switchPage(button.dataset.page)));
+            searchBar.addEventListener('input', () => renderProducts(searchBar.value));
+            document.getElementById('add-product-btn').addEventListener('click', () => openProductModal());
+            cancelProductBtn.addEventListener('click', closeProductModal);
+            saveProductBtn.addEventListener('click', saveProduct);
+            document.getElementById('add-to-invoice-btn').addEventListener('click', addToInvoice);
+            document.getElementById('save-invoice-btn').addEventListener('click', saveInvoice);
+            document.getElementById('whatsapp-share-btn').addEventListener('click', shareOnWhatsApp);
+            document.getElementById('export-pdf-btn').addEventListener('click', exportAsPDF);
+
+            // Invoice product search logic
+            invoiceProductSearch.addEventListener('input', () => {
+                const searchTerm = invoiceProductSearch.value.toLowerCase();
+                invoiceProductResults.innerHTML = '';
+                if (searchTerm.length === 0) {
+                    invoiceProductResults.classList.add('hidden');
+                    return;
+                }
+                const results = state.products.filter(p => 
+                    (p.name.toLowerCase().includes(searchTerm) || p.code.toLowerCase().includes(searchTerm)) && p.quantity > 0
+                );
+                if (results.length > 0) {
+                    results.forEach(product => {
+                        const item = document.createElement('div');
+                        item.className = 'search-result-item';
+                        item.textContent = `${product.name} (Stock: ${product.quantity})`;
+                        item.dataset.id = product.id;
+                        item.dataset.name = product.name;
+                        invoiceProductResults.appendChild(item);
+                    });
+                    invoiceProductResults.classList.remove('hidden');
+                } else {
+                    invoiceProductResults.classList.add('hidden');
+                }
+            });
+
+            invoiceProductResults.addEventListener('click', (e) => {
+                if (e.target.classList.contains('search-result-item')) {
+                    selectedProductIdInput.value = e.target.dataset.id;
+                    invoiceProductSearch.value = e.target.dataset.name;
+                    invoiceProductResults.classList.add('hidden');
+                    document.getElementById('invoice-quantity').focus();
+                }
+            });
+
+            // Hide search results when clicking elsewhere
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-container')) {
+                    invoiceProductResults.classList.add('hidden');
+                }
+            });
+
+            document.body.addEventListener('click', (e) => {
+                if (e.target.classList.contains('top-product-icon')) { const card = e.target.closest('.product-card'); if (card) toggleTopProduct(parseInt(card.dataset.id)); }
+                if (e.target.classList.contains('edit-product-btn')) { const product = state.products.find(p => p.id === parseInt(e.target.dataset.id)); if (product) openProductModal(product); }
+                if (e.target.classList.contains('delete-product-btn')) { deleteProduct(parseInt(e.target.dataset.id)); }
+                if (e.target.classList.contains('remove-invoice-item-btn')) { state.currentInvoice.items.splice(parseInt(e.target.dataset.index), 1); renderInvoiceItems(); }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') {
+                    if (e.key === '/') { if(document.activeElement !== searchBar) { e.preventDefault(); searchBar.focus(); } }
+                    return;
+                }
+                if (e.shiftKey) {
+                    switch(e.key.toUpperCase()) {
+                        case 'A': e.preventDefault(); openProductModal(); break;
+                        case 'D': e.preventDefault(); const firstDeleteBtn = document.querySelector('.delete-product-btn'); if(firstDeleteBtn) deleteProduct(parseInt(firstDeleteBtn.dataset.id)); break;
+                        case 'L': e.preventDefault(); handleLogout(); break;
+                        case 'R': e.preventDefault(); removeLatestInvoiceItem(); break;
+                    }
+                } else {
+                     switch(e.key.toLowerCase()) {
+                        case 's': e.preventDefault(); if(!document.getElementById('invoice-page').classList.contains('hidden')) saveInvoice(); break;
+                        case 'w': e.preventDefault(); if(!document.getElementById('invoice-page').classList.contains('hidden')) shareOnWhatsApp(); break;
+                        case 't': e.preventDefault(); const firstProduct = document.querySelector('.product-card'); if(firstProduct) toggleTopProduct(parseInt(firstProduct.dataset.id)); break;
+                        case '/': e.preventDefault(); searchBar.focus(); searchBar.select(); break;
+                     }
+                }
+            });
+
+            const renderAll = () => { renderProducts(); renderReports(); renderHistory(); };
+
+            // Initial call to set up the login screen
+            initializeLoginScreen();
+        });
+    </script>
+</body>
+</html>
