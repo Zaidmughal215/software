@@ -23,6 +23,7 @@
             --font-main: 'Inter', sans-serif;
             --font-mono: 'Roboto Mono', monospace;
             --shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            --theme-invert: 0; /* No invert in light mode */
         }
 
         body.dark-mode {
@@ -33,6 +34,7 @@
             --hover-bg: #ffffff;
             --hover-text: #000000;
             --shadow: 4px 4px 0px 0px rgba(255,255,255,1);
+            --theme-invert: 1; /* Invert in dark mode */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -108,7 +110,13 @@
             margin-bottom: 15px;
         }
         input:focus { background: var(--surface-color); }
-        
+
+        /* Override for grouped input */
+        #login-screen input, #lock-overlay input {
+            margin-bottom: 0 !important; /* Force override for grouped inputs */
+            border: none;
+        }
+
         /* Buttons */
         button {
             padding: 12px 20px;
@@ -134,6 +142,28 @@
 
         button.primary { background: var(--text-color); color: var(--bg-color); }
         button.primary:hover { background: var(--bg-color); color: var(--text-color); border-color: var(--text-color); }
+        
+        /* Eye Icon Button Style (New) */
+        #toggle-unlock-password, #toggle-login-password {
+            padding: 0; 
+            border: none; 
+            background: transparent; 
+            height: 44px; /* Matches input height */
+            width: 44px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        #toggle-unlock-password:hover, #toggle-login-password:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .eye-icon {
+            width: 20px; 
+            filter: invert(var(--theme-invert)); /* Inverts color based on theme */
+        }
         
         /* Small Button Override */
         button.small-btn {
@@ -186,12 +216,12 @@
         .shake { animation: shake 0.4s linear; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        /* Lock Screen */
-        #lock-overlay {
+        /* Lock Screen & Modals */
+        #lock-overlay, #shortcuts-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-color); z-index: 5000; 
+            background: rgba(0,0,0,0.8); /* Semi-transparent background */
+            z-index: 5000; 
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            border: 10px solid var(--border-color);
         }
 
         /* Toast */
@@ -209,6 +239,7 @@
             nav button { margin-right: 10px; }
             header { flex-direction: column; gap: 10px; align-items: flex-start; }
             .header-actions { width: 100%; display: flex; justify-content: space-between; }
+            #shortcuts-list { grid-template-columns: 1fr; } /* Stack shortcuts on mobile */
         }
         
         #invoice-pdf { display: none; font-family: 'Courier New', monospace; background: #fff; color: #000; padding: 20px; width: 300px; border: 1px dashed #000; }
@@ -217,20 +248,48 @@
 <body>
 
     <div id="lock-overlay" class="hidden">
-        <h1 style="margin-bottom: 20px; font-size: 2.5rem;">SYSTEM LOCKED</h1>
-        <div style="display: flex; gap: 10px; width: 90%; max-width: 400px;">
-            <input type="password" id="unlock-input" placeholder="PASSWORD" style="margin-bottom: 0;">
-            <button id="unlock-btn" class="primary" style="margin-bottom: 0;">UNLOCK</button>
+        <div class="card" style="width:100%; max-width:400px; text-align:center; border-width: 4px; background: var(--surface-color);">
+            <h1 style="margin-bottom: 20px; font-size: 2.5rem;">SYSTEM LOCKED</h1>
+            <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+                <div style="display:flex; align-items:center; border: 2px solid var(--border-color); background: var(--bg-color);">
+                    <input type="password" id="unlock-input" placeholder="PASSWORD" style="flex-grow: 1;">
+                    <button id="toggle-unlock-password">
+                        <img src="https://i.postimg.cc/597kgZTV/eye-(1).png" alt="Toggle Password" class="eye-icon">
+                    </button>
+                </div>
+                <button id="unlock-btn" class="primary" style="width: 100%;">UNLOCK</button>
+            </div>
         </div>
     </div>
 
     <div id="toast-container"></div>
 
+    <div id="shortcuts-modal" class="hidden">
+        <div class="card" style="width:90%; max-width:600px; border-width: 4px;">
+            <h2 style="margin-bottom: 20px;">KEYBOARD SHORTCUTS</h2>
+            <div id="shortcuts-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; font-family: var(--font-mono);">
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + F: <span style="float:right;">Finalize Invoice</span></div>
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + W: <span style="float:right;">WhatsApp Share</span></div>
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + L: <span style="float:right;">Lock Software</span></div>
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + P: <span style="float:right;">Add New Product</span></div>
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + Q: <span style="float:right; color: red;">Reset All Data</span></div>
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Enter: <span style="float:right;">Unlock/Login</span></div>
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">/: <span style="float:right;">Focus Dashboard Search</span></div>
+            </div>
+            <button onclick="document.getElementById('shortcuts-modal').classList.add('hidden')" style="width:100%; margin-top: 20px;">CLOSE</button>
+        </div>
+    </div>
+
     <div id="login-screen" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:4000; background:var(--bg-color); display:flex; justify-content:center; align-items:center;">
         <div class="card" style="width:100%; max-width:400px; text-align:center; border-width: 4px;">
             <h1 style="margin-bottom: 10px;">INVENTORY OS</h1>
             <p style="margin-bottom:30px; font-family:var(--font-mono);">SECURE TERMINAL</p>
-            <input type="password" id="login-pass" placeholder="ENTER PASSWORD">
+            <div style="display:flex; align-items:center; margin-bottom: 15px; border: 2px solid var(--border-color); background: var(--bg-color);">
+                <input type="password" id="login-pass" placeholder="ENTER PASSWORD" style="flex-grow: 1;">
+                <button id="toggle-login-password">
+                    <img src="https://i.postimg.cc/597kgZTV/eye-(1).png" alt="Toggle Password" class="eye-icon">
+                </button>
+            </div>
             <button id="login-btn" class="primary" style="width:100%">ACCESS SYSTEM</button>
         </div>
     </div>
@@ -244,7 +303,7 @@
                 <input type="file" id="restore-file" accept=".json" hidden>
                 <button id="theme-btn">THEME</button>
                 <button id="lock-btn" class="primary">LOCK</button>
-            </div>
+                <button id="shortcuts-btn">SHORTCUTS</button> </div>
         </header>
 
         <nav>
@@ -403,7 +462,6 @@
             second: 'numeric'
         });
         const ACTIVATION_DATE = new Date().toLocaleDateString('en-US', {
-            timeZone: 'Asia/Karachi',
             day: '2-digit', month: 'short', year: 'numeric'
         });
         
@@ -413,7 +471,6 @@
             cart: [],
             pass: localStorage.getItem('appPass'),
             theme: localStorage.getItem('theme') || 'light'
-            // CURRENCY LOGIC REMOVED
         };
         let chartInstance = null;
         
@@ -459,6 +516,23 @@
             };
         });
 
+        // --- NEW PASSWORD TOGGLE FUNCTION ---
+        const setupPasswordToggle = (toggleBtnId, inputId) => {
+            const toggleBtn = $(toggleBtnId);
+            const input = $(inputId);
+            if (!toggleBtn || !input) return; // Safety check
+            toggleBtn.onclick = () => {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                } else {
+                    input.type = 'password';
+                }
+                playSound('click');
+            };
+        };
+        setupPasswordToggle('toggle-login-password', 'login-pass');
+        setupPasswordToggle('toggle-unlock-password', 'unlock-input');
+
         // Lock & Login
         if(!state.pass) { $('login-screen').classList.remove('hidden'); $('login-btn').textContent = "SET PASSWORD"; }
         else $('login-screen').classList.remove('hidden');
@@ -474,6 +548,9 @@
                 else { playSound('error'); $('login-pass').classList.add('shake'); setTimeout(()=>$('login-pass').classList.remove('shake'),400); }
             }
         };
+        // NEW: Enter key on Login screen
+        $('login-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('login-btn').click(); });
+
 
         $('lock-btn').onclick = () => $('lock-overlay').classList.remove('hidden');
         
@@ -484,6 +561,8 @@
                 playSound('error'); $('unlock-input').classList.add('shake'); setTimeout(()=>$('unlock-input').classList.remove('shake'),400);
             }
         };
+        // NEW: Enter key on Lock screen
+        $('unlock-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('unlock-btn').click(); });
 
         // Backup & Restore
         $('backup-btn').onclick = () => {
@@ -644,7 +723,7 @@
             playSound('success'); showToast("SALE RECORDED");
         };
         
-        // --- NEW WHATSAPP SHARE LOGIC ---
+        // --- WHATSAPP SHARE LOGIC ---
         window.shareInvoiceWhatsApp = () => {
             const phoneInput = $('inv-phone');
             const phone = phoneInput.value.replace(/\D/g, ''); // Clean phone number (digits only)
@@ -773,13 +852,59 @@
             $('toast-container').appendChild(t); setTimeout(()=>t.remove(), 3000);
         }
 
+        // --- NEW SHORTCUTS & RESET FUNCTIONALITY ---
+
+        // NEW: System Reset Function (Shift + Q)
+        window.resetSoftware = () => {
+            if (confirm("DANGER: This will delete ALL products, invoices, and saved data. ARE YOU SURE?")) {
+                localStorage.clear();
+                showToast("DATA WIPED. RELOADING...");
+                location.reload();
+            }
+        };
+
+        // NEW: Shortcut Modal Handler
+        $('shortcuts-btn').onclick = () => {
+            $('shortcuts-modal').classList.remove('hidden');
+            playSound('click');
+        };
+
+        // NEW: Global Keyboard Shortcuts
+        document.addEventListener('keydown', e => {
+            // Block shortcuts if login/lock screen is visible, but allow Enter key to be handled by specific listeners
+            if (!$('login-screen').classList.contains('hidden') || !$('lock-overlay').classList.contains('hidden')) {
+                if (e.key !== 'Enter') {
+                    return; 
+                }
+            }
+
+            if (e.shiftKey) {
+                if (e.key === 'F' && !$('invoice').classList.contains('hidden')) { // Shift + F: Finalize Sale
+                    e.preventDefault();
+                    $('save-inv').click();
+                } else if (e.key === 'W' && !$('invoice').classList.contains('hidden')) { // Shift + W: WhatsApp Share
+                    e.preventDefault();
+                    $('whatsapp-share').click();
+                } else if (e.key === 'L') { // Shift + L: Lock Software
+                    e.preventDefault();
+                    $('lock-btn').click();
+                } else if (e.key === 'Q') { // Shift + Q: Reset All Data
+                    e.preventDefault();
+                    resetSoftware();
+                } else if (e.key === 'P' && !$('products').classList.contains('hidden')) { // Shift + P: Add Product
+                    e.preventDefault();
+                    openModal();
+                }
+            } else if (e.key === '/') { // /: Focus Dashboard Search
+                e.preventDefault();
+                $('search-bar').focus();
+            }
+        });
+
+
         // Init
         renderDash();
         renderHistory();
-        // Keyboard
-        document.addEventListener('keydown', e => {
-            if(e.key === '/') { e.preventDefault(); $('search-bar').focus(); }
-        });
     </script>
 </body>
 </html>
