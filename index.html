@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVENTORY OS [FINAL v3]</title>
+    <title>INVENTORY OS [FINAL v5]</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
@@ -23,7 +23,8 @@
             --font-main: 'Inter', sans-serif;
             --font-mono: 'Roboto Mono', monospace;
             --shadow: 4px 4px 0px 0px rgba(0,0,0,1);
-            --theme-invert: 0; /* No invert in light mode */
+            --theme-invert: 0;
+            --danger-color: #ff3333;
         }
 
         body.dark-mode {
@@ -34,7 +35,8 @@
             --hover-bg: #ffffff;
             --hover-text: #000000;
             --shadow: 4px 4px 0px 0px rgba(255,255,255,1);
-            --theme-invert: 1; /* Invert in dark mode */
+            --theme-invert: 1;
+            --danger-color: #ff5555;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -111,9 +113,8 @@
         }
         input:focus { background: var(--surface-color); }
 
-        /* Override for grouped input */
         #login-screen input, #lock-overlay input {
-            margin-bottom: 0 !important; /* Force override for grouped inputs */
+            margin-bottom: 0 !important;
             border: none;
         }
 
@@ -143,12 +144,15 @@
         button.primary { background: var(--text-color); color: var(--bg-color); }
         button.primary:hover { background: var(--bg-color); color: var(--text-color); border-color: var(--text-color); }
         
-        /* Eye Icon Button Style (New) */
+        button.danger { border-color: var(--danger-color); color: var(--danger-color); }
+        button.danger:hover { background: var(--danger-color); color: white; border-color: var(--danger-color); }
+
+        /* Eye Icon */
         #toggle-unlock-password, #toggle-login-password {
             padding: 0; 
             border: none; 
             background: transparent; 
-            height: 44px; /* Matches input height */
+            height: 44px; 
             width: 44px; 
             display: flex; 
             align-items: center; 
@@ -156,27 +160,12 @@
             margin-right: 5px;
             cursor: pointer;
         }
-        #toggle-unlock-password:hover, #toggle-login-password:hover {
-            transform: none;
-            box-shadow: none;
-        }
-        .eye-icon {
-            width: 20px; 
-            filter: invert(var(--theme-invert)); /* Inverts color based on theme */
-        }
+        #toggle-unlock-password:hover, #toggle-login-password:hover { transform: none; box-shadow: none; }
+        .eye-icon { width: 20px; filter: invert(var(--theme-invert)); }
         
-        /* Small Button Override */
-        button.small-btn {
-            padding: 5px 10px;
-            font-size: 0.7rem;
-            border-width: 1px;
-            box-shadow: none;
-        }
-        button.small-btn:hover {
-            transform: none;
-            background: var(--text-color);
-            color: var(--bg-color);
-        }
+        /* Small Button */
+        button.small-btn { padding: 5px 10px; font-size: 0.7rem; border-width: 1px; box-shadow: none; }
+        button.small-btn:hover { transform: none; background: var(--text-color); color: var(--bg-color); }
 
         /* Cards */
         .card {
@@ -210,21 +199,24 @@
         .list-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 2px solid var(--border-color); align-items: center; background: var(--bg-color); }
         .list-item:last-child { border-bottom: none; }
 
+        /* Search Results */
+        .search-result-item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; }
+        .search-result-item.highlight { background: var(--text-color); color: var(--bg-color); }
+
         /* Animations */
         .page { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .shake { animation: shake 0.4s linear; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        /* Lock Screen & Modals */
+        /* Overlays */
         #lock-overlay, #shortcuts-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); /* Semi-transparent background */
+            background: rgba(0,0,0,0.8); 
             z-index: 5000; 
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* Toast */
         #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
         .toast { 
             background: var(--text-color); color: var(--bg-color); padding: 15px 25px; font-weight: 700; font-family: var(--font-mono);
@@ -232,17 +224,16 @@
         }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* Responsive */
         @media (max-width: 768px) {
             #app-container { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; grid-template-areas: "header" "sidebar" "main"; }
             nav { flex-direction: row; overflow-x: auto; border-bottom: 2px solid var(--border-color); border-right: none; padding: 15px; }
             nav button { margin-right: 10px; }
             header { flex-direction: column; gap: 10px; align-items: flex-start; }
             .header-actions { width: 100%; display: flex; justify-content: space-between; }
-            #shortcuts-list { grid-template-columns: 1fr; } /* Stack shortcuts on mobile */
+            #shortcuts-list { grid-template-columns: 1fr; }
         }
         
-        #invoice-pdf { display: none; font-family: 'Courier New', monospace; background: #fff; color: #000; padding: 20px; width: 300px; border: 1px dashed #000; }
+        #invoice-pdf { display: none; }
     </style>
 </head>
 <body>
@@ -273,8 +264,8 @@
                 <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + L: <span style="float:right;">Lock Software</span></div>
                 <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + P: <span style="float:right;">Add New Product</span></div>
                 <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + Q: <span style="float:right; color: red;">Reset All Data</span></div>
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Enter: <span style="float:right;">Unlock/Login</span></div>
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">/: <span style="float:right;">Focus Dashboard Search</span></div>
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Arrow Down: <span style="float:right;">Select Product</span></div>
+                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">/: <span style="float:right;">Focus Search</span></div>
             </div>
             <button onclick="document.getElementById('shortcuts-modal').classList.add('hidden')" style="width:100%; margin-top: 20px;">CLOSE</button>
         </div>
@@ -346,10 +337,10 @@
                     </div>
                     
                     <div style="display:flex; gap:10px; margin-top:10px; position:relative;">
-                        <input type="text" id="inv-search" placeholder="SEARCH PRODUCT..." autocomplete="off" style="flex:3;">
+                        <input type="text" id="inv-search" placeholder="SEARCH PRODUCT... (ARROW KEYS)" autocomplete="off" style="flex:3;">
                         <input type="number" id="inv-qty" value="1" min="1" style="flex:1;">
                         <button id="inv-add" class="primary">ADD ITEM</button>
-                        <div id="inv-results" style="position:absolute; top:55px; width:100%; z-index:100; background:var(--bg-color); border:2px solid var(--border-color); display:none;"></div>
+                        <div id="inv-results" style="position:absolute; top:55px; width:100%; z-index:100; background:var(--bg-color); border:2px solid var(--border-color); display:none; max-height:200px; overflow-y:auto;"></div>
                     </div>
 
                     <div id="cart-list" style="margin-top:20px; border-top: 2px solid var(--border-color);"></div>
@@ -366,8 +357,14 @@
             </div>
 
             <div id="products" class="page hidden">
-                <button class="primary" onclick="openModal()" style="margin-bottom: 20px; width: 100%;">+ ADD NEW PRODUCT</button>
-                <div id="manage-list"></div>
+                <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                    <button class="primary" onclick="openModal()" style="flex:3">+ ADD NEW PRODUCT</button>
+                    <button onclick="generateInventoryPDF()" style="flex:1; border: 2px solid var(--text-color);">SAVE PDF</button>
+                </div>
+                <div class="card">
+                    <h3 style="margin-bottom:15px; border-bottom:2px solid var(--border-color); padding-bottom:5px;">INVENTORY LIST</h3>
+                    <div id="manage-list-container" style="display:flex; flex-direction:column;"></div>
+                </div>
             </div>
 
             <div id="reports" class="page hidden">
@@ -383,7 +380,10 @@
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                         <h2>TRANSACTION LOG</h2>
-                        <button onclick="confirmClearHistory()" style="border:1px solid var(--text-color); font-size: 0.8rem;">CLEAR ALL LOGS</button>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="generateHistoryPDF()" style="border:1px solid var(--text-color); font-size: 0.8rem;">SAVE PDF</button>
+                            <button onclick="confirmClearHistory()" style="border:1px solid var(--text-color); font-size: 0.8rem;">CLEAR ALL</button>
+                        </div>
                     </div>
                     <div id="hist-list" style="display: flex; flex-direction: column; gap: 15px;"></div>
                 </div>
@@ -410,19 +410,6 @@
                 <button onclick="closeModal()" style="flex:1">CANCEL</button>
             </div>
         </div>
-    </div>
-
-    <div id="invoice-pdf">
-        <h2 style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 10px;">OFFICIAL RECEIPT</h2>
-        <p>DATE: <span id="r-date"></span></p>
-        <p>ID: <span id="r-id"></span></p>
-        <br>
-        <table style="width:100%; text-align:left; border-collapse: collapse;">
-            <thead><tr style="border-bottom: 1px solid #000;"><th>ITEM</th><th>QTY</th><th style="text-align:right">AMT</th></tr></thead>
-            <tbody id="r-items"></tbody>
-        </table>
-        <br>
-        <h3 style="text-align:right; border-top: 2px solid #000; padding-top: 10px;" id="r-total">TOTAL: 0.00</h3>
     </div>
 
     <script>
@@ -452,18 +439,8 @@
 
         // --- Logic ---
         const $ = id => document.getElementById(id);
-
-        // --- Activation Time Definitions (KEPT) ---
-        const ACTIVATION_TIME = new Date().toLocaleTimeString('en-US', {
-            timeZone: 'Asia/Karachi',
-            hour12: true,
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric'
-        });
-        const ACTIVATION_DATE = new Date().toLocaleDateString('en-US', {
-            day: '2-digit', month: 'short', year: 'numeric'
-        });
+        const ACTIVATION_TIME = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Karachi', hour12: true, hour:'numeric', minute:'numeric', second:'numeric' });
+        const ACTIVATION_DATE = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
         
         let state = {
             products: JSON.parse(localStorage.getItem('products')) || [],
@@ -473,20 +450,14 @@
             theme: localStorage.getItem('theme') || 'light'
         };
         let chartInstance = null;
+        let searchIndex = -1; // Added for dropdown navigation
+        let currentSearchResults = []; // Track current results for navigation
         
-        // Helper function for monetary formatting
         const formatMoney = (value) => value.toFixed(2);
 
-
-        // Live Clock (Pakistan Time) - MODIFIED to include Activation Time
+        // Live Clock
         const updateClock = () => {
-            const now = new Date().toLocaleTimeString('en-US', {
-                timeZone: 'Asia/Karachi',
-                hour12: true,
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric'
-            });
+            const now = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Karachi', hour12: true, hour:'numeric', minute:'numeric', second:'numeric' });
             $('greeting-text').textContent = `SYSTEM ACTIVE SINCE ${ACTIVATION_DATE} ${ACTIVATION_TIME} | ${now}`;
         };
         setInterval(updateClock, 1000);
@@ -501,7 +472,6 @@
             renderChart();
         };
 
-        // Buttons click sound
         document.querySelectorAll('button').forEach(b => b.addEventListener('click', () => playSound('click')));
 
         // Navigation
@@ -513,27 +483,20 @@
                 btn.classList.add('active');
                 if(btn.dataset.target === 'reports') renderChart();
                 if(btn.dataset.target === 'history') renderHistory();
+                if(btn.dataset.target === 'products') renderManage(); // Render full list when tab opened
             };
         });
 
-        // --- NEW PASSWORD TOGGLE FUNCTION ---
+        // Pass Toggle
         const setupPasswordToggle = (toggleBtnId, inputId) => {
-            const toggleBtn = $(toggleBtnId);
-            const input = $(inputId);
-            if (!toggleBtn || !input) return; // Safety check
-            toggleBtn.onclick = () => {
-                if (input.type === 'password') {
-                    input.type = 'text';
-                } else {
-                    input.type = 'password';
-                }
-                playSound('click');
-            };
+            const toggleBtn = $(toggleBtnId); const input = $(inputId);
+            if (!toggleBtn || !input) return;
+            toggleBtn.onclick = () => { input.type = input.type === 'password' ? 'text' : 'password'; playSound('click'); };
         };
         setupPasswordToggle('toggle-login-password', 'login-pass');
         setupPasswordToggle('toggle-unlock-password', 'unlock-input');
 
-        // Lock & Login
+        // Login Logic
         if(!state.pass) { $('login-screen').classList.remove('hidden'); $('login-btn').textContent = "SET PASSWORD"; }
         else $('login-screen').classList.remove('hidden');
 
@@ -548,84 +511,48 @@
                 else { playSound('error'); $('login-pass').classList.add('shake'); setTimeout(()=>$('login-pass').classList.remove('shake'),400); }
             }
         };
-        // NEW: Enter key on Login screen
         $('login-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('login-btn').click(); });
-
-
         $('lock-btn').onclick = () => $('lock-overlay').classList.remove('hidden');
-        
         $('unlock-btn').onclick = () => {
-            if($('unlock-input').value === state.pass) {
-                $('lock-overlay').classList.add('hidden'); $('unlock-input').value = ''; playSound('success');
-            } else {
-                playSound('error'); $('unlock-input').classList.add('shake'); setTimeout(()=>$('unlock-input').classList.remove('shake'),400);
-            }
+            if($('unlock-input').value === state.pass) { $('lock-overlay').classList.add('hidden'); $('unlock-input').value = ''; playSound('success'); } 
+            else { playSound('error'); $('unlock-input').classList.add('shake'); setTimeout(()=>$('unlock-input').classList.remove('shake'),400); }
         };
-        // NEW: Enter key on Lock screen
         $('unlock-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('unlock-btn').click(); });
 
-        // Backup & Restore
+        // Data Handling
         $('backup-btn').onclick = () => {
-            const dataStr = JSON.stringify(state);
-            const blob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `INVENTORY_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            showToast("BACKUP DOWNLOADED");
+            const blob = new Blob([JSON.stringify(state)], {type: 'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `BACKUP_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast("BACKUP SAVED");
         };
 
         $('restore-btn').onclick = () => $('restore-file').click();
-
         $('restore-file').onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
-                    const importedState = JSON.parse(event.target.result);
-                    if (importedState.products && importedState.invoices) {
-                        state.products = importedState.products;
-                        state.invoices = importedState.invoices;
-                        state.pass = importedState.pass || state.pass;
-                        state.theme = importedState.theme || state.theme;
-                        sync();
-                        showToast("DATA RESTORED");
-                        location.reload();
-                    } else {
-                        showToast("INVALID FILE");
-                    }
-                } catch (err) {
-                    showToast("ERROR READING FILE");
-                }
+                    const data = JSON.parse(event.target.result);
+                    if(data.products) { state = {...state, ...data}; sync(); location.reload(); }
+                } catch(e) { showToast("INVALID FILE"); }
             };
             reader.readAsText(file);
         };
 
-
-        // Dashboard & Data
         const sync = () => {
             localStorage.setItem('products', JSON.stringify(state.products));
             localStorage.setItem('invoices', JSON.stringify(state.invoices));
-            renderDash();
+            renderDash(); renderManage();
         };
 
         const renderDash = () => {
             const term = $('search-bar').value.toLowerCase();
             const filtered = state.products.filter(p => p.name.toLowerCase().includes(term));
-            
             const totalVal = state.products.reduce((a,b) => a + (b.price*b.qty), 0);
-            $('total-val-display').textContent = `VALUATION: ${formatMoney(totalVal)}`;
-
-            const top = filtered.slice(0, 5);
-            $('top-list').innerHTML = top.map(p => `
-                <div class="list-item">
-                    <div><b>${p.name}</b></div>
-                    <div class="price">${formatMoney(p.price)}</div>
-                </div>
+            $('total-val-display').textContent = `VAL: ${formatMoney(totalVal)}`;
+            
+            $('top-list').innerHTML = filtered.slice(0,5).map(p => `
+                <div class="list-item"><div><b>${p.name}</b></div><div class="price">${formatMoney(p.price)}</div></div>
             `).join('');
 
             $('main-list').innerHTML = filtered.map(p => `
@@ -642,7 +569,35 @@
         };
         $('search-bar').oninput = renderDash;
 
-        // Products
+        // --- INVENTORY MANAGEMENT ---
+        const renderManage = () => {
+            const list = $('manage-list-container');
+            if(state.products.length === 0) {
+                list.innerHTML = '<p style="text-align:center; padding:20px; opacity:0.6;">NO INVENTORY FOUND.</p>';
+                return;
+            }
+            list.innerHTML = state.products.map(p => `
+                <div class="list-item">
+                    <div style="flex:1;">
+                        <div style="font-weight:bold;">${p.name}</div>
+                        <div style="font-size:0.8rem; opacity:0.7;">${p.code || 'NO CODE'} | QTY: ${p.qty}</div>
+                    </div>
+                    <div style="text-align:right; display:flex; gap:10px; align-items:center;">
+                        <span class="price" style="margin-right:10px;">${formatMoney(p.price)}</span>
+                        <button class="small-btn" onclick="editProd(${p.id})">EDIT</button>
+                        <button class="small-btn danger" onclick="deleteProduct(${p.id})">DELETE</button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.deleteProduct = (id) => {
+            if(confirm("PERMANENTLY DELETE THIS ITEM?")) {
+                state.products = state.products.filter(p => p.id !== id);
+                sync(); playSound('click'); showToast("PRODUCT DELETED");
+            }
+        };
+
         window.openModal = () => { $('prod-modal').classList.remove('hidden'); $('p-id').value=''; $('p-name').value=''; $('p-qty').value=''; $('p-price').value=''; $('p-code').value=''; $('p-cat').value=''; };
         window.closeModal = () => $('prod-modal').classList.add('hidden');
         
@@ -663,31 +618,94 @@
             
             sync(); closeModal(); playSound('success'); showToast("ITEM SAVED");
         };
-
         window.editProd = (id) => {
             const p = state.products.find(x => x.id == id);
             $('p-id').value = p.id; $('p-name').value = p.name; $('p-price').value = p.price; $('p-qty').value = p.qty; $('p-code').value = p.code || ''; $('p-cat').value = p.cat || '';
             $('prod-modal').classList.remove('hidden');
         };
 
-        // Invoice
+        // --- INVOICE & KEYBOARD NAV ---
         $('inv-search').oninput = (e) => {
             const v = e.target.value.toLowerCase();
-            const res = state.products.filter(p => p.name.toLowerCase().includes(v));
-            $('inv-results').style.display = (v && res.length) ? 'block' : 'none';
-            $('inv-results').innerHTML = res.map(p => `
-                <div style="padding:10px; border-bottom:1px solid var(--border-color); cursor:pointer; display:flex; justify-content:space-between;" onclick="addInvItem(${p.id})">
-                    <span>${p.name}</span> <b>${p.qty}</b>
-                </div>
-            `).join('');
+            currentSearchResults = state.products.filter(p => p.name.toLowerCase().includes(v));
+            searchIndex = -1; // Reset index on new input
+            renderSearchResults(v);
         };
 
+        // Keyboard Navigation for Dropdown
+        $('inv-search').addEventListener('keydown', (e) => {
+            const resultsDiv = $('inv-results');
+            if(resultsDiv.style.display === 'none') return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                searchIndex++;
+                if (searchIndex >= currentSearchResults.length) searchIndex = 0;
+                highlightResult();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                searchIndex--;
+                if (searchIndex < 0) searchIndex = currentSearchResults.length - 1;
+                highlightResult();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (searchIndex > -1 && currentSearchResults[searchIndex]) {
+                    addInvItem(currentSearchResults[searchIndex].id);
+                }
+            }
+        });
+
+        const renderSearchResults = (v) => {
+            const div = $('inv-results');
+            if(v && currentSearchResults.length) {
+                div.style.display = 'block';
+                div.innerHTML = currentSearchResults.map((p, index) => `
+                    <div class="search-result-item" id="res-${index}" onclick="addInvItem(${p.id})">
+                        <span>${p.name}</span> <b>${p.qty}</b>
+                    </div>
+                `).join('');
+            } else {
+                div.style.display = 'none';
+            }
+        };
+
+        const highlightResult = () => {
+            const items = document.querySelectorAll('.search-result-item');
+            items.forEach(i => i.classList.remove('highlight'));
+            const active = document.getElementById(`res-${searchIndex}`);
+            if(active) {
+                active.classList.add('highlight');
+                active.scrollIntoView({ block: 'nearest' });
+            }
+        };
+
+        // --- UPDATED ADD ITEM FUNCTION WITH LOW STOCK CHECK ---
         window.addInvItem = (id) => {
             const p = state.products.find(x => x.id == id);
-            const qty = parseInt($('inv-qty').value);
-            const ex = state.cart.find(x => x.id == id);
-            if(ex) ex.qty += qty; else state.cart.push({id, qty});
-            $('inv-search').value = ''; $('inv-results').style.display='none';
+            const qtyInput = parseInt($('inv-qty').value);
+
+            // Validation
+            if(qtyInput <= 0 || isNaN(qtyInput)) return showToast("INVALID QTY");
+
+            // Check if existing in cart to calculate total proposed qty
+            const existingInCart = state.cart.find(x => x.id == id);
+            const currentCartQty = existingInCart ? existingInCart.qty : 0;
+            
+            // LOW PRODUCT ERROR CHECK
+            if ((currentCartQty + qtyInput) > p.qty) {
+                playSound('error');
+                showToast("ERROR: LOW PRODUCT");
+                return; // Stop execution here
+            }
+
+            // Proceed if stock is sufficient
+            if(existingInCart) existingInCart.qty += qtyInput;
+            else state.cart.push({id, qty: qtyInput});
+
+            // Cleanup
+            $('inv-search').value = ''; 
+            $('inv-results').style.display='none';
+            searchIndex = -1;
             renderCart();
         };
 
@@ -695,216 +713,164 @@
             let total = 0;
             $('cart-list').innerHTML = state.cart.map(i => {
                 const p = state.products.find(x => x.id == i.id);
-                const itemTotal = p.price * i.qty;
-                total += itemTotal;
-                return `
-                <div class="list-item">
-                    <div>${p.name} <span style="font-size:0.8rem">x${i.qty}</span></div>
-                    <div style="font-weight:bold; font-family:var(--font-mono)">${formatMoney(itemTotal)}</div>
-                </div>`;
+                const itemTotal = p.price * i.qty; total += itemTotal;
+                return `<div class="list-item"><div>${p.name} <span style="font-size:0.8rem">x${i.qty}</span></div><div style="font-weight:bold; font-family:var(--font-mono)">${formatMoney(itemTotal)}</div></div>`;
             }).join('');
             $('cart-total').textContent = formatMoney(total);
         };
-
         window.clearInvoice = () => { state.cart=[]; renderCart(); $('inv-cust').value=''; $('inv-phone').value=''; };
 
         $('save-inv').onclick = () => {
             if(!state.cart.length) return playSound('error');
             const total = parseFloat($('cart-total').textContent);
-            state.cart.forEach(c => {
-                const p = state.products.find(x => x.id == c.id);
-                p.qty -= c.qty;
-            });
+            state.cart.forEach(c => state.products.find(x => x.id == c.id).qty -= c.qty);
             state.invoices.push({ id: Date.now(), date: new Date().toISOString(), cust: $('inv-cust').value, total, items: state.cart });
-            state.cart = []; sync(); renderCart(); $('inv-cust').value='';
-            renderHistory(); 
-            
+            state.cart = []; sync(); renderCart(); $('inv-cust').value=''; renderHistory(); 
             confetti({ particleCount: 150, spread: 70, colors: ['#000000', '#444444', '#888888', '#ffffff'] });
             playSound('success'); showToast("SALE RECORDED");
         };
-        
-        // --- WHATSAPP SHARE LOGIC ---
-        window.shareInvoiceWhatsApp = () => {
-            const phoneInput = $('inv-phone');
-            const phone = phoneInput.value.replace(/\D/g, ''); // Clean phone number (digits only)
-            
-            if (!phone) {
-                phoneInput.classList.add('shake');
-                setTimeout(()=>phoneInput.classList.remove('shake'), 400);
-                return showToast("ENTER CUSTOMER PHONE NUMBER");
-            }
-            
-            if (!state.cart.length) return showToast("CART IS EMPTY");
 
-            const custName = $('inv-cust').value || 'Customer';
-            const date = new Date().toLocaleDateString();
+        // WhatsApp Share
+        $('whatsapp-share').onclick = () => {
+            const phone = $('inv-phone').value.replace(/\D/g, '');
+            if (!phone) return showToast("ENTER PHONE NUMBER");
+            if (!state.cart.length) return showToast("CART EMPTY");
+            let msg = `*INVOICE*\nDate: ${new Date().toLocaleDateString()}\nCustomer: ${$('inv-cust').value||'Valued Customer'}\n\n`;
             let total = 0;
-            let message = `*--- INVOICE SUMMARY - INVENTORY OS ---*\n\n`;
-            message += `Date: ${date}\n`;
-            message += `Customer: ${custName}\n\n`;
-            message += `*ITEMS:*\n`;
-            
             state.cart.forEach(c => {
                 const p = state.products.find(x => x.id == c.id);
-                if (!p) return; // Skip if product not found
-                
-                const itemTotal = p.price * c.qty;
-                total += itemTotal;
-                // Format: Qty x Price = Total | Item Name
-                message += `${c.qty} x ${formatMoney(p.price)} = ${formatMoney(itemTotal)} | ${p.name}\n`;
+                const t = p.price * c.qty; total += t;
+                msg += `${c.qty} x ${p.name} = ${formatMoney(t)}\n`;
             });
-            
-            message += `\n*TOTAL AMOUNT: ${formatMoney(total)}*\n\n`;
-            message += `_Thank you for your business._`;
-            
-            const encodedMessage = encodeURIComponent(message);
-            // Uses wa.me link for direct share
-            const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
-            
-            window.open(whatsappUrl, '_blank');
-            playSound('click');
+            msg += `\n*TOTAL: ${formatMoney(total)}*`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         };
 
-        $('whatsapp-share').onclick = shareInvoiceWhatsApp;
-        // --- END WHATSAPP SHARE LOGIC ---
-
-        // History Rendering
+        // --- HISTORY & PDFS ---
         const renderHistory = () => {
-            const list = document.getElementById('hist-list');
-            list.innerHTML = '';
-            if(state.invoices.length === 0) {
-                list.innerHTML = '<p style="text-align:center; opacity:0.5;">NO HISTORY</p>';
-                return;
-            }
-            // Reverse to show newest first
+            const list = document.getElementById('hist-list'); list.innerHTML = '';
+            if(state.invoices.length === 0) { list.innerHTML = '<p style="text-align:center; opacity:0.5;">NO HISTORY</p>'; return; }
             [...state.invoices].reverse().forEach(inv => {
-                const date = new Date(inv.date).toLocaleString();
-                const item = document.createElement('div');
-                item.className = 'list-item';
+                const item = document.createElement('div'); item.className = 'list-item';
                 item.innerHTML = `
-                    <div>
-                        <div style="font-weight:bold; margin-bottom:5px;">DATE: ${date}</div>
-                        <div style="font-size:0.8rem; opacity:0.7;">ID: ${inv.id}</div>
-                    </div>
-                    <div style="text-align:right">
-                        <div style="font-weight:bold; margin-bottom:5px;">CUST: ${inv.cust || 'N/A'}</div>
-                        <div class="price">${formatMoney(inv.total)}</div>
-                        <button class="small-btn" onclick="deleteInvoice(${inv.id})" style="margin-top:5px;">DELETE</button>
-                    </div>
-                `;
+                    <div><div style="font-weight:bold;">${new Date(inv.date).toLocaleString()}</div><div style="font-size:0.8rem; opacity:0.7;">ID: ${inv.id}</div></div>
+                    <div style="text-align:right"><div style="font-weight:bold;">${inv.cust || 'N/A'}</div><div class="price">${formatMoney(inv.total)}</div></div>`;
                 list.appendChild(item);
             });
         };
 
-        window.deleteInvoice = (id) => {
-            if(!confirm("DELETE THIS RECORD?")) return;
-            state.invoices = state.invoices.filter(inv => inv.id !== id);
-            sync(); renderHistory(); renderChart();
-            showToast("RECORD DELETED");
-        };
-
         window.confirmClearHistory = () => {
-            if(state.invoices.length === 0) return showToast("NOTHING TO CLEAR");
-            if(confirm("WARNING: DELETE ALL HISTORY? THIS CANNOT BE UNDONE.")) {
-                state.invoices = [];
-                sync(); renderHistory(); renderChart();
-                playSound('success'); showToast("HISTORY CLEARED");
-            }
+            if(confirm("DELETE ALL HISTORY?")) { state.invoices = []; sync(); renderHistory(); renderChart(); showToast("HISTORY CLEARED"); }
         };
 
-        // Chart (Simple Line Graph)
+        // PDF GENERATION FUNCTIONS
+        window.generateInventoryPDF = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFont("courier");
+            doc.setFontSize(16);
+            doc.text("INVENTORY REPORT", 105, 15, { align: "center" });
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 22, { align: "center" });
+            doc.line(10, 25, 200, 25);
+            
+            let y = 35;
+            doc.text("ITEM NAME", 10, y);
+            doc.text("CODE", 100, y);
+            doc.text("QTY", 140, y);
+            doc.text("PRICE", 170, y);
+            y += 5;
+            doc.line(10, y, 200, y);
+            y += 7;
+
+            state.products.forEach(p => {
+                if(y > 280) { doc.addPage(); y = 20; }
+                doc.text(p.name.substring(0, 35), 10, y);
+                doc.text(p.code || "-", 100, y);
+                doc.text(p.qty.toString(), 140, y);
+                doc.text(p.price.toFixed(2), 170, y);
+                y += 7;
+            });
+
+            doc.save("INVENTORY_FULL_LIST.pdf");
+            showToast("PDF SAVED");
+        };
+
+        window.generateHistoryPDF = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFont("courier");
+            doc.setFontSize(16);
+            doc.text("SALES LOG REPORT", 105, 15, { align: "center" });
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 22, { align: "center" });
+            doc.line(10, 25, 200, 25);
+
+            let y = 35;
+            doc.text("DATE", 10, y);
+            doc.text("CUSTOMER", 80, y);
+            doc.text("ITEMS", 140, y);
+            doc.text("TOTAL", 180, y);
+            y += 5;
+            doc.line(10, y, 200, y);
+            y += 7;
+
+            // Reverse to show newest first for PDF too
+            [...state.invoices].reverse().forEach(inv => {
+                if(y > 280) { doc.addPage(); y = 20; }
+                const dateStr = new Date(inv.date).toLocaleDateString();
+                const itemCount = inv.items.reduce((a, b) => a + b.qty, 0);
+                
+                doc.text(dateStr, 10, y);
+                doc.text((inv.cust || "Guest").substring(0, 20), 80, y);
+                doc.text(itemCount.toString(), 140, y);
+                doc.text(inv.total.toFixed(2), 180, y);
+                y += 7;
+            });
+            
+            const grandTotal = state.invoices.reduce((a,b) => a+b.total, 0);
+            doc.line(10, y, 200, y);
+            y += 10;
+            doc.setFontSize(12);
+            doc.text(`GRAND TOTAL REVENUE: ${grandTotal.toFixed(2)}`, 10, y);
+
+            doc.save("SALES_HISTORY_LOG.pdf");
+            showToast("PDF SAVED");
+        };
+
+        // Chart
         const renderChart = () => {
             if(chartInstance) chartInstance.destroy();
             const ctx = $('salesChart').getContext('2d');
             const dates = state.invoices.map(i => new Date(i.date).toLocaleDateString()).slice(-7);
             const totals = state.invoices.map(i => i.total).slice(-7);
             const color = state.theme === 'dark' ? '#ffffff' : '#000000';
-
             chartInstance = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: dates.length ? dates : ['NONE'],
-                    datasets: [{
-                        label: 'REVENUE',
-                        data: totals.length ? totals : [0],
-                        borderColor: color,
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        tension: 0.1,
-                        pointBackgroundColor: color
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { ticks: { color: color }, grid: { color: state.theme === 'dark' ? '#333' : '#ddd' } },
-                        x: { ticks: { color: color }, grid: { display: false } }
-                    },
-                    plugins: { legend: { labels: { color: color, font: { family: 'Inter' } } } }
-                }
+                data: { labels: dates.length?dates:['NONE'], datasets: [{ label: 'REVENUE', data: totals.length?totals:[0], borderColor: color, backgroundColor: 'transparent', borderWidth: 2, tension: 0.1, pointBackgroundColor: color }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: color }, grid: { color: state.theme === 'dark'?'#333':'#ddd' } }, x: { ticks: { color: color }, grid: { display: false } } }, plugins: { legend: { labels: { color: color, font: { family: 'Inter' } } } } }
             });
         };
 
-        // Extras
-        function showToast(msg) {
-            const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
-            $('toast-container').appendChild(t); setTimeout(()=>t.remove(), 3000);
-        }
-
-        // --- NEW SHORTCUTS & RESET FUNCTIONALITY ---
-
-        // NEW: System Reset Function (Shift + Q)
+        // Shortcuts & Reset
         window.resetSoftware = () => {
-            if (confirm("DANGER: This will delete ALL products, invoices, and saved data. ARE YOU SURE?")) {
-                localStorage.clear();
-                showToast("DATA WIPED. RELOADING...");
-                location.reload();
-            }
+            if(confirm("DANGER: DELETE ALL DATA?")) { localStorage.clear(); location.reload(); }
         };
-
-        // NEW: Shortcut Modal Handler
-        $('shortcuts-btn').onclick = () => {
-            $('shortcuts-modal').classList.remove('hidden');
-            playSound('click');
-        };
-
-        // NEW: Global Keyboard Shortcuts
+        $('shortcuts-btn').onclick = () => $('shortcuts-modal').classList.remove('hidden');
         document.addEventListener('keydown', e => {
-            // Block shortcuts if login/lock screen is visible, but allow Enter key to be handled by specific listeners
-            if (!$('login-screen').classList.contains('hidden') || !$('lock-overlay').classList.contains('hidden')) {
-                if (e.key !== 'Enter') {
-                    return; 
-                }
-            }
-
-            if (e.shiftKey) {
-                if (e.key === 'F' && !$('invoice').classList.contains('hidden')) { // Shift + F: Finalize Sale
-                    e.preventDefault();
-                    $('save-inv').click();
-                } else if (e.key === 'W' && !$('invoice').classList.contains('hidden')) { // Shift + W: WhatsApp Share
-                    e.preventDefault();
-                    $('whatsapp-share').click();
-                } else if (e.key === 'L') { // Shift + L: Lock Software
-                    e.preventDefault();
-                    $('lock-btn').click();
-                } else if (e.key === 'Q') { // Shift + Q: Reset All Data
-                    e.preventDefault();
-                    resetSoftware();
-                } else if (e.key === 'P' && !$('products').classList.contains('hidden')) { // Shift + P: Add Product
-                    e.preventDefault();
-                    openModal();
-                }
-            } else if (e.key === '/') { // /: Focus Dashboard Search
-                e.preventDefault();
-                $('search-bar').focus();
-            }
+            if(!$('login-screen').classList.contains('hidden') || !$('lock-overlay').classList.contains('hidden')) return;
+            if(e.shiftKey) {
+                if(e.key==='F' && !$('invoice').classList.contains('hidden')) $('save-inv').click();
+                if(e.key==='W' && !$('invoice').classList.contains('hidden')) $('whatsapp-share').click();
+                if(e.key==='L') $('lock-btn').click();
+                if(e.key==='Q') resetSoftware();
+                if(e.key==='P' && !$('products').classList.contains('hidden')) openModal();
+            } else if(e.key==='/') { e.preventDefault(); $('search-bar').focus(); }
         });
 
+        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; $('toast-container').appendChild(t); setTimeout(()=>t.remove(), 3000); }
 
-        // Init
-        renderDash();
-        renderHistory();
+        renderDash(); renderHistory();
     </script>
 </body>
 </html>
