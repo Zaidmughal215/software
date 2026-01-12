@@ -2,875 +2,1023 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVENTORY OS [FINAL v5]</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Workspace</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --bg-color: #ffffff;
-            --surface-color: #f4f4f4;
-            --text-color: #000000;
-            --border-color: #000000;
-            --hover-bg: #000000;
-            --hover-text: #ffffff;
-            --font-main: 'Inter', sans-serif;
-            --font-mono: 'Roboto Mono', monospace;
-            --shadow: 4px 4px 0px 0px rgba(0,0,0,1);
-            --theme-invert: 0;
-            --danger-color: #ff3333;
+            --color-bg-dark: #050505;
+            --color-accent: #ea580c; /* Burnt Orange (Orange-600) */
+            --color-accent-hover: #c2410c; /* Darker Burnt */
+            --color-accent-glow: rgba(234, 88, 12, 0.15);
         }
-
-        body.dark-mode {
-            --bg-color: #000000;
-            --surface-color: #111111;
-            --text-color: #ffffff;
-            --border-color: #ffffff;
-            --hover-bg: #ffffff;
-            --hover-text: #000000;
-            --shadow: 4px 4px 0px 0px rgba(255,255,255,1);
-            --theme-invert: 1;
-            --danger-color: #ff5555;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: var(--font-main);
-            background: var(--bg-color);
-            color: var(--text-color);
-            height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-dark);
+            color: #ffffff;
             overflow: hidden;
-            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-color); border-left: 2px solid var(--border-color); }
-        ::-webkit-scrollbar-thumb { background: var(--text-color); }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px; /* Thinner */
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
 
-        .hidden { display: none !important; }
-
-        /* --- Layout --- */
-        #app-container {
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            grid-template-rows: auto 1fr;
-            grid-template-areas: "sidebar header" "sidebar main";
-            height: 100vh;
+        /* Background Gradient & Noise */
+        .bg-gradient-premium {
+            /* Increased orange presence for cinematic look */
+            background: radial-gradient(circle at 50% -20%, #4a1e0f, #1a0a05 40%, #050505 80%);
+        }
+        
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
-        /* Sidebar */
-        nav {
-            grid-area: sidebar;
-            background: var(--bg-color);
-            border-right: 2px solid var(--border-color);
-            padding: 30px 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        /* Glassmorphism - Enhanced */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        header {
-            grid-area: header;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--border-color);
-            background: var(--bg-color);
+        .glass-input {
+            background: rgba(30, 30, 30, 0.4);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
         }
 
-        main {
-            grid-area: main;
-            padding: 30px;
-            overflow-y: auto;
-            background: var(--surface-color);
+        /* Ensure no default outline on the textarea inside */
+        .glass-input textarea:focus {
+            outline: none;
+            box-shadow: none;
         }
 
-        /* --- Components --- */
-        h1, h2, h3 { font-weight: 800; text-transform: uppercase; letter-spacing: -0.5px; }
-        
-        /* Inputs */
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--border-color);
-            background: var(--bg-color);
-            color: var(--text-color);
-            font-family: var(--font-main);
-            font-weight: 600;
-            font-size: 0.95rem;
-            border-radius: 0;
-            margin-bottom: 15px;
-        }
-        input:focus { background: var(--surface-color); }
-
-        #login-screen input, #lock-overlay input {
-            margin-bottom: 0 !important;
-            border: none;
-        }
-
-        /* Buttons */
-        button {
-            padding: 12px 20px;
-            border: 2px solid var(--border-color);
-            background: var(--bg-color);
-            color: var(--text-color);
-            font-weight: 800;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.1s;
-            border-radius: 0;
-            white-space: nowrap;
+        .glass-input:focus-within {
+            border-color: rgba(234, 88, 12, 0.6);
+            box-shadow: 0 0 30px rgba(234, 88, 12, 0.25);
+            transform: scale(1.005);
+            outline: none; /* For the container itself if it gets focus */
         }
         
-        button:hover, button.active {
-            background: var(--hover-bg);
-            color: var(--hover-text);
-            box-shadow: var(--shadow);
-            transform: translate(-2px, -2px);
-        }
-        button:active { transform: translate(0, 0); box-shadow: none; }
-
-        button.primary { background: var(--text-color); color: var(--bg-color); }
-        button.primary:hover { background: var(--bg-color); color: var(--text-color); border-color: var(--text-color); }
-        
-        button.danger { border-color: var(--danger-color); color: var(--danger-color); }
-        button.danger:hover { background: var(--danger-color); color: white; border-color: var(--danger-color); }
-
-        /* Eye Icon */
-        #toggle-unlock-password, #toggle-login-password {
-            padding: 0; 
-            border: none; 
-            background: transparent; 
-            height: 44px; 
-            width: 44px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin-right: 5px;
-            cursor: pointer;
-        }
-        #toggle-unlock-password:hover, #toggle-login-password:hover { transform: none; box-shadow: none; }
-        .eye-icon { width: 20px; filter: invert(var(--theme-invert)); }
-        
-        /* Small Button */
-        button.small-btn { padding: 5px 10px; font-size: 0.7rem; border-width: 1px; box-shadow: none; }
-        button.small-btn:hover { transform: none; background: var(--text-color); color: var(--bg-color); }
-
-        /* Cards */
-        .card {
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: var(--shadow);
+        /* Moving Border Animation for Settings */
+        @keyframes borderRotate {
+            0% { --angle: 0deg; }
+            100% { --angle: 360deg; }
         }
 
-        /* Product Cards */
-        .product-card {
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            padding: 15px;
-            transition: transform 0.2s;
+        @property --angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        .glow-border {
             position: relative;
         }
-        .product-card:hover {
-            background: var(--text-color);
-            color: var(--bg-color);
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
+
+        .glow-border::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: conic-gradient(from var(--angle), transparent 20%, #ea580c 50%, transparent 80%);
+            border-radius: inherit;
+            z-index: -1;
+            animation: borderRotate 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        .product-card:hover .price, .product-card:hover p, .product-card:hover div { color: var(--bg-color) !important; }
-        .product-card:hover button { border-color: var(--bg-color); background: var(--bg-color); color: var(--text-color); }
 
-        .price { font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem; }
+        .glow-border:hover::after, .glow-border:focus-within::after {
+            opacity: 1;
+        }
+
+        .modal-glass {
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
         
-        /* List Items */
-        .list-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 2px solid var(--border-color); align-items: center; background: var(--bg-color); }
-        .list-item:last-child { border-bottom: none; }
-
-        /* Search Results */
-        .search-result-item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; }
-        .search-result-item.highlight { background: var(--text-color); color: var(--bg-color); }
+        .input-glow:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(234, 88, 12, 0.3);
+            border-color: rgba(234, 88, 12, 0.5);
+        }
 
         /* Animations */
-        .page { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .shake { animation: shake 0.4s linear; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-
-        /* Overlays */
-        #lock-overlay, #shortcuts-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); 
-            z-index: 5000; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-
-        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { 
-            background: var(--text-color); color: var(--bg-color); padding: 15px 25px; font-weight: 700; font-family: var(--font-mono);
-            border: 2px solid var(--bg-color); animation: slideIn 0.3s forwards; box-shadow: var(--shadow);
-        }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
-        @media (max-width: 768px) {
-            #app-container { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; grid-template-areas: "header" "sidebar" "main"; }
-            nav { flex-direction: row; overflow-x: auto; border-bottom: 2px solid var(--border-color); border-right: none; padding: 15px; }
-            nav button { margin-right: 10px; }
-            header { flex-direction: column; gap: 10px; align-items: flex-start; }
-            .header-actions { width: 100%; display: flex; justify-content: space-between; }
-            #shortcuts-list { grid-template-columns: 1fr; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        #invoice-pdf { display: none; }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        
+        .animate-shimmer {
+            animation: shimmer 2s infinite;
+        }
+
+        /* Markdown Styles */
+        .prose {
+            max-width: none;
+            color: #e5e5e5;
+        }
+        .prose h1, .prose h2, .prose h3 { color: #fff; font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; }
+        .prose p { margin-bottom: 0.8em; line-height: 1.6; }
+        .prose code { background: rgba(255,255,255,0.1); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; color: #f97316; }
+        .prose pre { background: #1a1a1a; padding: 1em; border-radius: 8px; overflow-x: auto; margin: 1em 0; border: 1px solid #333; }
+        .prose pre code { background: transparent; padding: 0; color: #e5e5e5; }
+        .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.8em; }
+        .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.8em; }
+        
+        /* Sidebar Tooltip */
+        .sidebar-icon-container:hover .tooltip {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Particle Background (Simplified CSS implementation) */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(249, 115, 22, 0.2);
+            border-radius: 50%;
+        }
+
+        /* History Panel Transition */
+        .history-panel-enter {
+            transform: translateX(0) !important;
+        }
+        
+        /* Typing Cursor */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-start infinite;
+            color: #ea580c;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
     </style>
 </head>
-<body>
+<body class="h-screen w-screen flex bg-gradient-premium relative selection:bg-orange-500/30 selection:text-orange-100">
 
-    <div id="lock-overlay" class="hidden">
-        <div class="card" style="width:100%; max-width:400px; text-align:center; border-width: 4px; background: var(--surface-color);">
-            <h1 style="margin-bottom: 20px; font-size: 2.5rem;">SYSTEM LOCKED</h1>
-            <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
-                <div style="display:flex; align-items:center; border: 2px solid var(--border-color); background: var(--bg-color);">
-                    <input type="password" id="unlock-input" placeholder="PASSWORD" style="flex-grow: 1;">
-                    <button id="toggle-unlock-password">
-                        <img src="https://i.postimg.cc/597kgZTV/eye-(1).png" alt="Toggle Password" class="eye-icon">
-                    </button>
+    <!-- Noise Overlay -->
+    <div class="noise-overlay"></div>
+
+    <!-- Sidebar -->
+    <nav class="hidden md:flex w-16 h-full glass border-r-0 flex-col items-center py-8 z-30 transition-all duration-300 relative">
+        <div class="mb-12 text-orange-500 text-xl drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+
+        <div class="flex flex-col gap-8 w-full items-center">
+            <div class="sidebar-icon-container relative group cursor-pointer" onclick="resetChat()">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all duration-200">
+                    <i class="fa-solid fa-house"></i>
                 </div>
-                <button id="unlock-btn" class="primary" style="width: 100%;">UNLOCK</button>
+                <div class="tooltip absolute left-14 top-2 bg-gray-800 text-xs px-2 py-1 rounded opacity-0 -translate-x-2 transition-all duration-200 whitespace-nowrap border border-gray-700 pointer-events-none shadow-lg">New Chat</div>
             </div>
+
+            <div class="sidebar-icon-container relative group cursor-pointer" onclick="toggleHistory()">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all duration-200">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <div class="tooltip absolute left-14 top-2 bg-gray-800 text-xs px-2 py-1 rounded opacity-0 -translate-x-2 transition-all duration-200 whitespace-nowrap border border-gray-700 pointer-events-none shadow-lg">History</div>
+            </div>
+
+            <div class="sidebar-icon-container relative group cursor-pointer">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all duration-200">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+                <div class="tooltip absolute left-14 top-2 bg-gray-800 text-xs px-2 py-1 rounded opacity-0 -translate-x-2 transition-all duration-200 whitespace-nowrap border border-gray-700 pointer-events-none shadow-lg">Explore</div>
+            </div>
+        </div>
+
+        <div class="mt-auto flex flex-col gap-6 w-full items-center">
+             <div class="sidebar-icon-container relative group cursor-pointer" onclick="openSettings()">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all duration-200">
+                    <i class="fa-solid fa-gear animate-spin-slow" style="animation-duration: 10s;"></i>
+                </div>
+                 <div class="tooltip absolute left-14 top-2 bg-gray-800 text-xs px-2 py-1 rounded opacity-0 -translate-x-2 transition-all duration-200 whitespace-nowrap border border-gray-700 pointer-events-none shadow-lg">Settings</div>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-orange-600/20 border border-orange-500/50 flex items-center justify-center text-xs font-bold text-orange-500 shadow-[0_0_15px_rgba(234,88,12,0.3)]">
+                AI
+            </div>
+        </div>
+    </nav>
+    
+    <!-- History Sidebar (Slide-in) -->
+    <div id="history-panel" class="hidden md:flex fixed top-0 left-16 h-full w-72 glass border-l-0 border-r border-white/10 z-20 transform -translate-x-full transition-transform duration-300 flex-col backdrop-blur-3xl bg-black/80">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+            <h3 class="text-white font-semibold tracking-wide">History</h3>
+            <button onclick="toggleHistory()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-chevron-left"></i></button>
+        </div>
+        <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <!-- History items will be injected here -->
+            <div class="text-center text-gray-500 text-xs mt-10">No recent chats</div>
+        </div>
+        <div class="p-4 border-t border-white/5">
+            <button onclick="clearAllHistory()" class="w-full py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors border border-transparent hover:border-red-500/20">
+                Clear All History
+            </button>
+        </div>
+    </div>
+    
+    <!-- Mobile Header Navigation (Replacing Sidebar on Mobile) -->
+    <div class="md:hidden fixed top-0 left-0 w-full z-50 glass h-16 flex items-center justify-between px-4">
+        <div class="text-orange-500 text-xl drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div class="flex items-center gap-4">
+             <button onclick="toggleHistoryMobile()" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </button>
+             <button onclick="openSettings()" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white">
+                <i class="fa-solid fa-gear"></i>
+            </button>
         </div>
     </div>
 
-    <div id="toast-container"></div>
-
-    <div id="shortcuts-modal" class="hidden">
-        <div class="card" style="width:90%; max-width:600px; border-width: 4px;">
-            <h2 style="margin-bottom: 20px;">KEYBOARD SHORTCUTS</h2>
-            <div id="shortcuts-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; font-family: var(--font-mono);">
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + F: <span style="float:right;">Finalize Invoice</span></div>
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + W: <span style="float:right;">WhatsApp Share</span></div>
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + L: <span style="float:right;">Lock Software</span></div>
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + P: <span style="float:right;">Add New Product</span></div>
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Shift + Q: <span style="float:right; color: red;">Reset All Data</span></div>
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">Arrow Down: <span style="float:right;">Select Product</span></div>
-                <div style="font-weight:bold; padding: 10px; border: 1px dashed var(--border-color); background: var(--surface-color);">/: <span style="float:right;">Focus Search</span></div>
-            </div>
-            <button onclick="document.getElementById('shortcuts-modal').classList.add('hidden')" style="width:100%; margin-top: 20px;">CLOSE</button>
+    <!-- Mobile History Overlay -->
+    <div id="mobile-history-overlay" class="fixed inset-0 z-40 bg-black/80 backdrop-blur-md hidden" onclick="toggleHistoryMobile()"></div>
+    <div id="mobile-history-panel" class="fixed top-0 left-0 h-full w-3/4 max-w-sm glass z-50 transform -translate-x-full transition-transform duration-300 flex flex-col md:hidden">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+            <h3 class="text-white font-semibold tracking-wide">History</h3>
+            <button onclick="toggleHistoryMobile()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="mobile-history-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+         <div class="p-4 border-t border-white/5">
+            <button onclick="clearAllHistory()" class="w-full py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors border border-transparent hover:border-red-500/20">
+                Clear All History
+            </button>
         </div>
     </div>
 
-    <div id="login-screen" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:4000; background:var(--bg-color); display:flex; justify-content:center; align-items:center;">
-        <div class="card" style="width:100%; max-width:400px; text-align:center; border-width: 4px;">
-            <h1 style="margin-bottom: 10px;">INVENTORY OS</h1>
-            <p style="margin-bottom:30px; font-family:var(--font-mono);">SECURE TERMINAL</p>
-            <div style="display:flex; align-items:center; margin-bottom: 15px; border: 2px solid var(--border-color); background: var(--bg-color);">
-                <input type="password" id="login-pass" placeholder="ENTER PASSWORD" style="flex-grow: 1;">
-                <button id="toggle-login-password">
-                    <img src="https://i.postimg.cc/597kgZTV/eye-(1).png" alt="Toggle Password" class="eye-icon">
-                </button>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative z-10 h-full">
+        
+        <!-- Header -->
+        <header class="w-full p-6 flex justify-between items-center absolute top-0 left-0 z-20 mt-16 md:mt-0 pointer-events-none">
+            <div class="flex items-center gap-2 pointer-events-auto">
+                <span class="text-sm font-medium text-gray-400 tracking-wider">MIMO V2</span>
+                <span class="px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-[10px] text-orange-500 font-bold uppercase shadow-[0_0_10px_rgba(234,88,12,0.2)]">Flash</span>
             </div>
-            <button id="login-btn" class="primary" style="width:100%">ACCESS SYSTEM</button>
-        </div>
-    </div>
-
-    <div id="app-container">
-        <header>
-            <div id="greeting-text" style="font-weight:bold; font-family:var(--font-mono);">SYSTEM ACTIVE</div>
-            <div class="header-actions" style="display:flex; gap:10px; flex-wrap: wrap;">
-                <button id="backup-btn">BACKUP DATA</button>
-                <button id="restore-btn">RESTORE DATA</button>
-                <input type="file" id="restore-file" accept=".json" hidden>
-                <button id="theme-btn">THEME</button>
-                <button id="lock-btn" class="primary">LOCK</button>
-                <button id="shortcuts-btn">SHORTCUTS</button> </div>
+            <div class="flex gap-4">
+                <button class="text-gray-400 hover:text-white transition-colors"><i class="fa-regular fa-bell"></i></button>
+            </div>
         </header>
 
-        <nav>
-            <button class="nav-button active" data-target="dashboard">DASHBOARD</button>
-            <button class="nav-button" data-target="invoice">NEW INVOICE</button>
-            <button class="nav-button" data-target="products">INVENTORY</button>
-            <button class="nav-button" data-target="reports">ANALYTICS</button>
-            <button class="nav-button" data-target="history">HISTORY</button>
-        </nav>
+        <!-- Chat Container -->
+        <div id="chat-container" class="flex-1 overflow-y-auto px-4 sm:px-20 pt-24 pb-48 flex flex-col gap-6 scroll-smooth">
+            <!-- Initial Hero State (Hidden when chat starts) -->
+            <div id="hero-section" class="flex flex-col items-center justify-center h-full text-center transition-all duration-500">
+                <h1 id="hero-typing-text" class="text-4xl md:text-5xl font-bold text-white mb-8 tracking-tight drop-shadow-lg min-h-[4rem] typing-cursor">
+                    <!-- Text injected by JS -->
+                </h1>
 
-        <main>
-            <div id="dashboard" class="page">
-                <div style="display:flex; gap: 10px; margin-bottom: 20px;">
-                    <input type="text" id="search-bar" placeholder="SEARCH DATABASE... (/)" style="margin-bottom: 0;">
-                    <button disabled style="border:none; background:transparent; font-family:var(--font-mono); font-weight:bold;" id="total-val-display">VAL: 0.00</button>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                    <div>
-                        <h3 style="margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 5px;">TOP ITEMS</h3>
-                        <div id="top-list" style="display:grid; gap:15px;"></div>
-                    </div>
-                    <div>
-                        <h3 style="margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 5px;">ALL STOCK</h3>
-                        <div id="main-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="invoice" class="page hidden">
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                        <h2>CREATE INVOICE</h2>
-                        <button onclick="clearInvoice()">CLEAR FORM</button>
-                    </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                        <input type="text" id="inv-cust" placeholder="CUSTOMER NAME" list="cust-list">
-                        <datalist id="cust-list"></datalist>
-                        <input type="tel" id="inv-phone" placeholder="PHONE NO (FOR WHATSAPP)">
-                    </div>
-                    
-                    <div style="display:flex; gap:10px; margin-top:10px; position:relative;">
-                        <input type="text" id="inv-search" placeholder="SEARCH PRODUCT... (ARROW KEYS)" autocomplete="off" style="flex:3;">
-                        <input type="number" id="inv-qty" value="1" min="1" style="flex:1;">
-                        <button id="inv-add" class="primary">ADD ITEM</button>
-                        <div id="inv-results" style="position:absolute; top:55px; width:100%; z-index:100; background:var(--bg-color); border:2px solid var(--border-color); display:none; max-height:200px; overflow-y:auto;"></div>
-                    </div>
-
-                    <div id="cart-list" style="margin-top:20px; border-top: 2px solid var(--border-color);"></div>
-
-                    <div style="text-align:right; margin-top:20px; padding-top: 10px; border-top: 2px solid var(--border-color);">
-                        <div style="font-size:2.5rem; font-weight:800; font-family:var(--font-mono)" id="cart-total">0.00</div>
-                    </div>
-
-                    <div style="margin-top:20px; display:flex; gap:10px;">
-                        <button id="save-inv" class="primary" style="flex:2">FINALIZE SALE</button>
-                        <button id="whatsapp-share" style="flex:1">WHATSAPP SHARE</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="products" class="page hidden">
-                <div style="display:flex; gap:10px; margin-bottom: 20px;">
-                    <button class="primary" onclick="openModal()" style="flex:3">+ ADD NEW PRODUCT</button>
-                    <button onclick="generateInventoryPDF()" style="flex:1; border: 2px solid var(--text-color);">SAVE PDF</button>
-                </div>
-                <div class="card">
-                    <h3 style="margin-bottom:15px; border-bottom:2px solid var(--border-color); padding-bottom:5px;">INVENTORY LIST</h3>
-                    <div id="manage-list-container" style="display:flex; flex-direction:column;"></div>
-                </div>
-            </div>
-
-            <div id="reports" class="page hidden">
-                <div class="card">
-                    <h2>SALES METRICS</h2>
-                    <div style="height:350px; margin-top:20px;">
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div id="history" class="page hidden">
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                        <h2>TRANSACTION LOG</h2>
-                        <div style="display:flex; gap:10px;">
-                            <button onclick="generateHistoryPDF()" style="border:1px solid var(--text-color); font-size: 0.8rem;">SAVE PDF</button>
-                            <button onclick="confirmClearHistory()" style="border:1px solid var(--text-color); font-size: 0.8rem;">CLEAR ALL</button>
+                <!-- Fake Input for Hero Focus -->
+                <div onclick="document.getElementById('user-input').focus()" class="w-full max-w-xl mb-10 group cursor-text">
+                    <div class="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-4 flex items-center gap-4 transition-all duration-300 group-hover:bg-white/10 group-hover:border-orange-500/30 group-hover:shadow-[0_0_30px_rgba(234,88,12,0.1)] backdrop-blur-md">
+                        <i class="fa-solid fa-magnifying-glass text-gray-500 group-hover:text-orange-500 transition-colors"></i>
+                        <span class="text-gray-500 text-lg font-light group-hover:text-gray-400 transition-colors">Ask anything...</span>
+                        <div class="absolute right-4 px-2 py-1 rounded border border-white/10 text-xs text-gray-600 bg-black/20 hidden sm:block">
+                            Start typing
                         </div>
                     </div>
-                    <div id="hist-list" style="display: flex; flex-direction: column; gap: 15px;"></div>
+                </div>
+                
+                <div class="flex flex-wrap gap-3 justify-center max-w-2xl mb-12 px-4">
+                    <button onclick="setPrompt('Draft a marketing plan for a coffee shop')" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-orange-500/30 hover:text-white text-sm text-gray-300 transition-all duration-200 backdrop-blur-md shadow-sm hover:shadow-orange-500/20">
+                        Draft a marketing plan
+                    </button>
+                    <button onclick="setPrompt('Explain quantum computing simply')" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-orange-500/30 hover:text-white text-sm text-gray-300 transition-all duration-200 backdrop-blur-md shadow-sm hover:shadow-orange-500/20">
+                        Explain quantum computing
+                    </button>
+                    <button onclick="setPrompt('Write a python script to scrape a website')" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-orange-500/30 hover:text-white text-sm text-gray-300 transition-all duration-200 backdrop-blur-md shadow-sm hover:shadow-orange-500/20">
+                        Python scraping script
+                    </button>
+                    <button onclick="setPrompt('Generate a creative story about a robot')" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-orange-500/30 hover:text-white text-sm text-gray-300 transition-all duration-200 backdrop-blur-md shadow-sm hover:shadow-orange-500/20">
+                        Creative story
+                    </button>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <div id="prod-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; display:flex; justify-content:center; align-items:center;" class="hidden">
-        <div class="card" style="width:90%; max-width:500px; border-width: 4px;">
-            <h2 style="margin-bottom: 20px;">PRODUCT DATA</h2>
-            <input type="hidden" id="p-id">
-            <input type="text" id="p-name" placeholder="PRODUCT NAME *">
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="p-code" placeholder="CODE (OPTIONAL)">
-                <input type="text" id="p-cat" placeholder="CATEGORY (OPTIONAL)" list="cat-list">
-                <datalist id="cat-list"></datalist>
+            <!-- Messages will be injected here -->
+            <div id="messages-area" class="w-full max-w-3xl mx-auto flex flex-col gap-6 hidden"></div>
+            
+            <!-- Loading Indicator -->
+             <div id="loading-indicator" class="w-full max-w-3xl mx-auto hidden animate-fade-in">
+                <div class="flex gap-4 items-center">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-orange-900/30 ring-1 ring-white/10 opacity-70">
+                        AI
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
+                        <span class="text-xs text-orange-500 font-medium tracking-wide">THINKING</span>
+                        <div class="flex gap-1 items-center">
+                            <div class="typing-dot w-1 h-1 bg-orange-400"></div>
+                            <div class="typing-dot w-1 h-1 bg-orange-400"></div>
+                            <div class="typing-dot w-1 h-1 bg-orange-400"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div style="display:flex; gap:10px;">
-                <input type="number" id="p-price" placeholder="PRICE *">
-                <input type="number" id="p-qty" placeholder="STOCK QTY *">
+        </div>
+
+        <!-- Input Area -->
+        <div class="w-full p-6 flex justify-center absolute bottom-0 z-30 pointer-events-none">
+            <div class="w-full max-w-3xl relative pointer-events-auto">
+                <div class="glass-input rounded-2xl p-2 pl-4 flex flex-col gap-2">
+                    <!-- Image Preview Area -->
+                    <div id="image-preview-container" class="hidden px-2 pt-2">
+                        <div class="relative w-16 h-16 group">
+                            <img id="image-preview" src="" alt="Upload preview" class="w-full h-full object-cover rounded-lg border border-white/20">
+                            <button onclick="clearImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-end gap-2">
+                        <div class="flex items-center pb-3 gap-2 text-gray-400">
+                            <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                            <button onclick="document.getElementById('image-upload').click()" class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors" title="Attach file">
+                                <i class="fa-solid fa-paperclip"></i>
+                            </button>
+                            <button onclick="openSettings()" class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors" title="Model settings">
+                                <i class="fa-solid fa-sliders"></i>
+                            </button>
+                        </div>
+                        
+                        <textarea 
+                            id="user-input" 
+                            rows="1" 
+                            class="w-full bg-transparent border-none text-white placeholder-gray-500 focus:ring-0 resize-none py-3 max-h-40 overflow-y-auto"
+                            placeholder="Ask anything..."
+                            oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                            onkeydown="handleEnter(event)"
+                        ></textarea>
+
+                        <button 
+                            onclick="sendMessage()"
+                            id="send-btn"
+                            class="mb-1 w-10 h-10 rounded-xl bg-gradient-to-br from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white flex items-center justify-center transition-all duration-200 shadow-[0_0_15px_rgba(234,88,12,0.4)] disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <p class="text-[10px] text-gray-600">AI can make mistakes. Check important info.</p>
+                </div>
             </div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="primary" onclick="saveProduct()" style="flex:1">SAVE DATA</button>
-                <button onclick="closeModal()" style="flex:1">CANCEL</button>
+        </div>
+
+    </main>
+
+    <script>
+        // Configuration
+        const API_KEY = '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';
+        const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+        const MODEL = 'xiaomi/mimo-v2-flash:free';
+
+        // State
+        let messages = [];
+        let chatHistory = [];
+        let isProcessing = false;
+        let currentImage = null;
+
+        // Elements
+        const chatContainer = document.getElementById('chat-container');
+        const messagesArea = document.getElementById('messages-area');
+        const heroSection = document.getElementById('hero-section');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const historyPanel = document.getElementById('history-panel');
+        const historyList = document.getElementById('history-list');
+        const mobileHistoryPanel = document.getElementById('mobile-history-panel');
+        const mobileHistoryOverlay = document.getElementById('mobile-history-overlay');
+        const mobileHistoryList = document.getElementById('mobile-history-list');
+
+        // Initial Focus & Setup
+        userInput.focus();
+        loadHistory();
+        startHeroTyping();
+
+        // Helper: Format Markdown
+        function formatMarkdown(text) {
+            return marked.parse(text);
+        }
+
+        // Helper: Set Prompt from Hero
+        function setPrompt(text) {
+            userInput.value = text;
+            userInput.style.height = 'auto'; // Reset height first
+            userInput.style.height = userInput.scrollHeight + 'px';
+            userInput.focus();
+        }
+
+        // Handle Enter Key
+        function handleEnter(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Image Handling
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImage = e.target.result;
+                    document.getElementById('image-preview').src = currentImage;
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearImage() {
+            currentImage = null;
+            document.getElementById('image-upload').value = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+        }
+
+        // Hero Typing Animation
+        function startHeroTyping() {
+            const element = document.getElementById('hero-typing-text');
+            const text1 = "What can I help you ";
+            const text2 = "create?";
+            const fullText = text1 + text2;
+            
+            element.innerHTML = '';
+            let i = 0;
+            
+            function type() {
+                if (i < text1.length) {
+                    element.innerHTML += text1.charAt(i);
+                    i++;
+                    setTimeout(type, 50);
+                } else if (i < fullText.length) {
+                    // Start adding span for "create"
+                    if (i === text1.length) {
+                        element.innerHTML += '<span class="text-orange-500">';
+                    }
+                    // Find the span we just added/are adding to
+                    const span = element.querySelector('span');
+                    span.innerText += fullText.charAt(i);
+                    i++;
+                    setTimeout(type, 50);
+                } else {
+                    // Ensure closing tag isn't messed up visually (browser handles innerHTML)
+                    // Remove cursor
+                    element.classList.remove('typing-cursor');
+                }
+            }
+            type();
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const content = userInput.value.trim();
+            if ((!content && !currentImage) || isProcessing) return;
+
+            // UI Updates
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            isProcessing = true;
+            sendBtn.disabled = true;
+            
+            // Hide Hero, Show Messages
+            heroSection.classList.add('hidden');
+            messagesArea.classList.remove('hidden');
+            messagesArea.classList.add('flex');
+
+            // Construct User Message
+            const userMsgObj = { role: 'user', content: content };
+            if (currentImage) {
+                userMsgObj.content = [
+                    { type: "text", text: content },
+                    { type: "image_url", image_url: { url: currentImage } }
+                ];
+                userMsgObj.displayImage = currentImage; // For local display
+            }
+            
+            messages.push(userMsgObj);
+            addMessageToUI(userMsgObj);
+            
+            // Clear image input
+            const tempImage = currentImage; // Keep ref if needed for logic
+            clearImage();
+
+            // Show Loading
+            loadingIndicator.classList.remove('hidden');
+            scrollToBottom();
+
+            try {
+                // Prepare Payload
+                const systemMessage = { role: 'system', content: getSystemPrompt() };
+                
+                // Prepend system message
+                let finalMessages = [systemMessage, ...messages.map(m => {
+                    // Ensure clean payload for API
+                    if (m.displayImage) {
+                        return { 
+                            role: m.role, 
+                            content: [
+                                { type: "text", text: typeof m.content === 'string' ? m.content : m.content[0].text },
+                                { type: "image_url", image_url: { url: m.displayImage } }
+                            ]
+                        };
+                    }
+                    return { role: m.role, content: m.content };
+                })];
+
+                const payload = {
+                    model: MODEL,
+                    messages: finalMessages,
+                    reasoning: { enabled: true }
+                };
+
+                // Fetch API
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+                const data = await response.json();
+                const aiMessage = data.choices[0].message;
+
+                // Store message
+                messages.push({
+                    role: 'assistant',
+                    content: aiMessage.content,
+                    reasoning_details: aiMessage.reasoning_details || null
+                });
+
+                // Display response
+                addMessageToUI({
+                    role: 'assistant',
+                    content: aiMessage.content,
+                    reasoning_details: aiMessage.reasoning_details
+                });
+
+                // Auto-save to history on successful exchange
+                saveCurrentChatToHistory();
+
+            } catch (error) {
+                console.error(error);
+                addMessageToUI({ role: 'system', content: 'Sorry, something went wrong. Please check your connection or try again.' });
+            } finally {
+                isProcessing = false;
+                sendBtn.disabled = false;
+                loadingIndicator.classList.add('hidden');
+                scrollToBottom();
+                userInput.focus();
+            }
+        }
+
+        // Add Message to UI
+        function addMessageToUI(msg) {
+            const role = msg.role;
+            const content = Array.isArray(msg.content) ? msg.content[0].text : msg.content;
+            const displayImage = msg.displayImage;
+            const reasoning = msg.reasoning_details;
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'animate-fade-in flex flex-col gap-2 w-full';
+            
+            if (role === 'user') {
+                messageDiv.classList.add('items-end');
+                
+                let imageHtml = '';
+                if (displayImage) {
+                    imageHtml = `<img src="${displayImage}" class="max-w-[200px] rounded-lg border border-white/10 mb-2 block">`;
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="px-5 py-3 rounded-2xl bg-white/10 text-white max-w-[85%] rounded-br-none border border-white/5">
+                        ${imageHtml}
+                        <p class="whitespace-pre-wrap">${content}</p>
+                    </div>
+                `;
+            } else if (role === 'assistant') {
+                const formattedContent = formatMarkdown(content);
+                let reasoningHtml = '';
+                
+                if (reasoning) {
+                    const reasoningText = typeof reasoning === 'string' ? reasoning : JSON.stringify(reasoning, null, 2);
+                    reasoningHtml = `
+                        <div class="ml-14 mb-2">
+                            <details class="group">
+                                <summary class="list-none cursor-pointer w-fit">
+                                    <div class="inline-flex items-center gap-2 text-xs text-orange-500/80 hover:text-orange-400 transition-colors bg-orange-500/5 px-3 py-1.5 rounded-full border border-orange-500/10 hover:border-orange-500/30">
+                                        <i class="fa-solid fa-brain text-[10px]"></i>
+                                        <span>Thought Process</span>
+                                        <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200 group-open:rotate-180"></i>
+                                    </div>
+                                </summary>
+                                <div class="mt-2 p-4 rounded-xl bg-black/20 border border-white/5 text-xs text-gray-400 font-mono whitespace-pre-wrap leading-relaxed shadow-inner">
+                                    ${reasoningText}
+                                </div>
+                            </details>
+                        </div>
+                    `;
+                }
+
+                messageDiv.innerHTML = `
+                    ${reasoningHtml}
+                    <div class="flex gap-4 p-6 rounded-2xl bg-white/5 border border-white/5 w-full shadow-sm backdrop-blur-sm relative overflow-hidden group hover:border-white/10 transition-colors duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none"></div>
+                        <div class="flex-shrink-0 mt-1">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-orange-900/30 ring-1 ring-white/10">
+                                AI
+                            </div>
+                        </div>
+                        <div class="prose flex-1 overflow-hidden text-sm md:text-base">
+                            ${formattedContent}
+                        </div>
+                    </div>
+                `;
+            } else if (role === 'system') {
+                messageDiv.innerHTML = `
+                    <div class="w-full text-center py-2">
+                        <span class="text-red-400 text-sm bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">${content}</span>
+                    </div>
+                `;
+            }
+
+            messagesArea.appendChild(messageDiv);
+        }
+
+        // Scroll to Bottom
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 100);
+        }
+
+        // --- History Logic ---
+        function toggleHistory() {
+            historyPanel.classList.toggle('-translate-x-full');
+            if (!historyPanel.classList.contains('-translate-x-full')) {
+                renderHistoryList();
+            }
+        }
+
+        function toggleHistoryMobile() {
+             const isHidden = mobileHistoryPanel.classList.contains('-translate-x-full');
+             if (isHidden) {
+                 mobileHistoryPanel.classList.remove('-translate-x-full');
+                 mobileHistoryOverlay.classList.remove('hidden');
+                 renderHistoryList(true);
+             } else {
+                 mobileHistoryPanel.classList.add('-translate-x-full');
+                 mobileHistoryOverlay.classList.add('hidden');
+             }
+        }
+
+        function saveCurrentChatToHistory() {
+            if (messages.length === 0) return;
+            
+            // Generate a summary from first message
+            const firstMsg = messages.find(m => m.role === 'user');
+            if (!firstMsg) return;
+            
+            let summary = Array.isArray(firstMsg.content) ? firstMsg.content[0].text : firstMsg.content;
+            summary = summary.substring(0, 30) + (summary.length > 30 ? '...' : '');
+            
+            const timestamp = new Date().toISOString();
+            
+            // Check if we are updating an existing session (simple implementation: always new for now unless we track session ID)
+            // For simplicity in this demo, we'll shift the last one if it matches exactly, or just push new
+            // A better way is a session ID. Let's make a simple session ID.
+            if (!window.currentSessionId) {
+                window.currentSessionId = Date.now().toString();
+                const newEntry = {
+                    id: window.currentSessionId,
+                    summary: summary,
+                    timestamp: timestamp,
+                    messages: messages
+                };
+                chatHistory.unshift(newEntry);
+            } else {
+                // Update existing
+                const index = chatHistory.findIndex(c => c.id === window.currentSessionId);
+                if (index !== -1) {
+                    chatHistory[index].messages = messages;
+                    chatHistory[index].timestamp = timestamp;
+                    // Move to top
+                    const entry = chatHistory.splice(index, 1)[0];
+                    chatHistory.unshift(entry);
+                } else {
+                    // Fallback
+                     const newEntry = {
+                        id: window.currentSessionId,
+                        summary: summary,
+                        timestamp: timestamp,
+                        messages: messages
+                    };
+                    chatHistory.unshift(newEntry);
+                }
+            }
+            
+            localStorage.setItem('mimo_chat_history', JSON.stringify(chatHistory));
+            renderHistoryList();
+            renderHistoryList(true); // update mobile too
+        }
+
+        function loadHistory() {
+            const saved = localStorage.getItem('mimo_chat_history');
+            if (saved) {
+                chatHistory = JSON.parse(saved);
+            }
+        }
+
+        function renderHistoryList(isMobile = false) {
+            const listEl = isMobile ? mobileHistoryList : historyList;
+            listEl.innerHTML = '';
+            
+            if (chatHistory.length === 0) {
+                listEl.innerHTML = '<div class="text-center text-gray-500 text-xs mt-10">No recent chats</div>';
+                return;
+            }
+            
+            chatHistory.forEach(chat => {
+                const item = document.createElement('div');
+                item.className = 'p-3 rounded-lg hover:bg-white/5 cursor-pointer border border-transparent hover:border-white/10 transition-all group';
+                item.onclick = () => restoreChat(chat.id);
+                
+                const time = new Date(chat.timestamp).toLocaleDateString();
+                
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs text-orange-500 font-medium truncate w-3/4">${chat.summary}</span>
+                        <span class="text-[10px] text-gray-600">${time}</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 truncate group-hover:text-gray-300">Click to load chat...</p>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function restoreChat(id) {
+            const chat = chatHistory.find(c => c.id === id);
+            if (!chat) return;
+            
+            // Set session
+            window.currentSessionId = chat.id;
+            messages = chat.messages;
+            
+            // Clear UI
+            messagesArea.innerHTML = '';
+            
+            // Re-render
+            messages.forEach(msg => addMessageToUI(msg));
+            
+            // Show Chat
+            heroSection.classList.add('hidden');
+            messagesArea.classList.remove('hidden');
+            messagesArea.classList.add('flex');
+            scrollToBottom();
+            
+            // Close sidebars
+            if (!historyPanel.classList.contains('-translate-x-full')) toggleHistory();
+            if (!mobileHistoryPanel.classList.contains('-translate-x-full')) toggleHistoryMobile();
+        }
+
+        function clearAllHistory() {
+            if(confirm('Delete all chat history?')) {
+                chatHistory = [];
+                localStorage.removeItem('mimo_chat_history');
+                renderHistoryList();
+                renderHistoryList(true);
+            }
+        }
+
+        // Particle Background
+        function createParticles() {
+            const body = document.body;
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                particle.style.left = `${x}%`;
+                particle.style.top = `${y}%`;
+                particle.style.opacity = Math.random() * 0.3 + 0.1;
+                animateParticle(particle);
+                body.appendChild(particle);
+            }
+        }
+
+        function animateParticle(element) {
+            const duration = Math.random() * 10000 + 10000;
+            const xMove = (Math.random() - 0.5) * 10;
+            const yMove = (Math.random() - 0.5) * 10;
+            
+            element.animate([
+                { transform: `translate(0, 0)`, opacity: parseFloat(element.style.opacity) },
+                { transform: `translate(${xMove}vw, ${yMove}vh)`, opacity: 0 }
+            ], {
+                duration: duration,
+                easing: 'linear',
+                fill: 'forwards'
+            }).onfinish = () => {
+                element.style.left = `${Math.random() * 100}%`;
+                element.style.top = `${Math.random() * 100}%`;
+                element.style.opacity = Math.random() * 0.3 + 0.1;
+                animateParticle(element);
+            };
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            loadSettings();
+        });
+
+        // Settings Logic
+        const userProfile = { name: '', age: '', profession: '', note: '' };
+
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            document.getElementById('settings-modal').classList.add('flex');
+            document.getElementById('setting-name').value = userProfile.name;
+            document.getElementById('setting-age').value = userProfile.age;
+            document.getElementById('setting-profession').value = userProfile.profession;
+            document.getElementById('setting-note').value = userProfile.note;
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('flex');
+        }
+
+        function saveSettings() {
+            userProfile.name = document.getElementById('setting-name').value.trim();
+            userProfile.age = document.getElementById('setting-age').value.trim();
+            userProfile.profession = document.getElementById('setting-profession').value.trim();
+            userProfile.note = document.getElementById('setting-note').value.trim();
+            localStorage.setItem('mimo_user_profile', JSON.stringify(userProfile));
+            closeSettings();
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('mimo_user_profile');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                userProfile.name = parsed.name || '';
+                userProfile.age = parsed.age || '';
+                userProfile.profession = parsed.profession || '';
+                userProfile.note = parsed.note || '';
+            }
+        }
+
+        function getSystemPrompt() {
+            let prompt = "You are MIMO V2, a helpful and intelligent AI assistant.";
+            const details = [];
+            if (userProfile.name) details.push(`User Name: ${userProfile.name}`);
+            if (userProfile.age) details.push(`User Age: ${userProfile.age}`);
+            if (userProfile.profession) details.push(`User Profession: ${userProfile.profession}`);
+            if (userProfile.note) details.push(`Note about user: ${userProfile.note}`);
+            if (details.length > 0) {
+                prompt += "\n\nUser Context:\n" + details.join("\n");
+                prompt += "\n\nPlease personalize your responses based on this context when relevant.";
+            }
+            return prompt;
+        }
+
+        function resetChat() {
+            if (isProcessing) return;
+            messages = [];
+            window.currentSessionId = null;
+            messagesArea.innerHTML = '';
+            messagesArea.classList.add('hidden');
+            messagesArea.classList.remove('flex');
+            heroSection.classList.remove('hidden');
+            loadingIndicator.classList.add('hidden');
+            userInput.value = '';
+            clearImage();
+            userInput.style.height = 'auto';
+            userInput.focus();
+            startHeroTyping(); // Restart animation
+            
+            // Close history if open
+             if (!historyPanel.classList.contains('-translate-x-full')) toggleHistory();
+        }
+
+    </script>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-4">
+        <div class="relative w-full max-w-lg overflow-hidden rounded-2xl modal-glass p-1 glow-border">
+            <div class="bg-zinc-900/90 rounded-xl p-8 h-full relative z-10">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Profile & Context</h2>
+                        <p class="text-xs text-gray-400 mt-1">Teach AI about you for better responses</p>
+                    </div>
+                    <button onclick="closeSettings()" class="text-gray-500 hover:text-white transition-colors">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="flex flex-col gap-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-xs font-medium text-orange-500 uppercase tracking-wider ml-1">Name</label>
+                            <input id="setting-name" type="text" placeholder="Your Name" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:bg-white/10 input-glow transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-medium text-orange-500 uppercase tracking-wider ml-1">Age</label>
+                            <input id="setting-age" type="text" placeholder="e.g. 28" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:bg-white/10 input-glow transition-all">
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-xs font-medium text-orange-500 uppercase tracking-wider ml-1">Profession</label>
+                        <input id="setting-profession" type="text" placeholder="e.g. Senior Product Designer" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:bg-white/10 input-glow transition-all">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-medium text-orange-500 uppercase tracking-wider ml-1">Memory / Notes</label>
+                        <textarea id="setting-note" rows="3" placeholder="Tell the AI what to remember about your preferences..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:bg-white/10 input-glow transition-all resize-none"></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-4">
+                        <button onclick="closeSettings()" class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">Cancel</button>
+                        <button onclick="saveSettings()" class="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-lg shadow-orange-900/40 transition-all transform hover:scale-105 active:scale-95 border border-orange-400/20">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Decorative elements -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
             </div>
         </div>
     </div>
-
-    <script>
-        // --- Audio Engine ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const playSound = (type) => {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            const now = audioCtx.currentTime;
-
-            if (type === 'click') { 
-                osc.type = 'square'; osc.frequency.setValueAtTime(200, now); 
-                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                osc.start(now); osc.stop(now + 0.05);
-            } else if (type === 'success') { 
-                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.linearRampToValueAtTime(800, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'error') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.linearRampToValueAtTime(80, now + 0.2);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.2);
-                osc.start(now); osc.stop(now + 0.2);
-            }
-        };
-
-        // --- Logic ---
-        const $ = id => document.getElementById(id);
-        const ACTIVATION_TIME = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Karachi', hour12: true, hour:'numeric', minute:'numeric', second:'numeric' });
-        const ACTIVATION_DATE = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-        
-        let state = {
-            products: JSON.parse(localStorage.getItem('products')) || [],
-            invoices: JSON.parse(localStorage.getItem('invoices')) || [],
-            cart: [],
-            pass: localStorage.getItem('appPass'),
-            theme: localStorage.getItem('theme') || 'light'
-        };
-        let chartInstance = null;
-        let searchIndex = -1; // Added for dropdown navigation
-        let currentSearchResults = []; // Track current results for navigation
-        
-        const formatMoney = (value) => value.toFixed(2);
-
-        // Live Clock
-        const updateClock = () => {
-            const now = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Karachi', hour12: true, hour:'numeric', minute:'numeric', second:'numeric' });
-            $('greeting-text').textContent = `SYSTEM ACTIVE SINCE ${ACTIVATION_DATE} ${ACTIVATION_TIME} | ${now}`;
-        };
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // Theme Init
-        if(state.theme === 'dark') document.body.classList.add('dark-mode');
-        $('theme-btn').onclick = () => {
-            document.body.classList.toggle('dark-mode');
-            state.theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
-            localStorage.setItem('theme', state.theme);
-            renderChart();
-        };
-
-        document.querySelectorAll('button').forEach(b => b.addEventListener('click', () => playSound('click')));
-
-        // Navigation
-        document.querySelectorAll('.nav-button').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-                document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
-                $(btn.dataset.target).classList.remove('hidden');
-                btn.classList.add('active');
-                if(btn.dataset.target === 'reports') renderChart();
-                if(btn.dataset.target === 'history') renderHistory();
-                if(btn.dataset.target === 'products') renderManage(); // Render full list when tab opened
-            };
-        });
-
-        // Pass Toggle
-        const setupPasswordToggle = (toggleBtnId, inputId) => {
-            const toggleBtn = $(toggleBtnId); const input = $(inputId);
-            if (!toggleBtn || !input) return;
-            toggleBtn.onclick = () => { input.type = input.type === 'password' ? 'text' : 'password'; playSound('click'); };
-        };
-        setupPasswordToggle('toggle-login-password', 'login-pass');
-        setupPasswordToggle('toggle-unlock-password', 'unlock-input');
-
-        // Login Logic
-        if(!state.pass) { $('login-screen').classList.remove('hidden'); $('login-btn').textContent = "SET PASSWORD"; }
-        else $('login-screen').classList.remove('hidden');
-
-        $('login-btn').onclick = () => {
-            const val = $('login-pass').value;
-            if(!state.pass) {
-                if(val.length < 4) return showToast("TOO SHORT");
-                state.pass = val; localStorage.setItem('appPass', val);
-                $('login-screen').classList.add('hidden');
-            } else {
-                if(val === state.pass) { $('login-screen').classList.add('hidden'); playSound('success'); }
-                else { playSound('error'); $('login-pass').classList.add('shake'); setTimeout(()=>$('login-pass').classList.remove('shake'),400); }
-            }
-        };
-        $('login-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('login-btn').click(); });
-        $('lock-btn').onclick = () => $('lock-overlay').classList.remove('hidden');
-        $('unlock-btn').onclick = () => {
-            if($('unlock-input').value === state.pass) { $('lock-overlay').classList.add('hidden'); $('unlock-input').value = ''; playSound('success'); } 
-            else { playSound('error'); $('unlock-input').classList.add('shake'); setTimeout(()=>$('unlock-input').classList.remove('shake'),400); }
-        };
-        $('unlock-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('unlock-btn').click(); });
-
-        // Data Handling
-        $('backup-btn').onclick = () => {
-            const blob = new Blob([JSON.stringify(state)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `BACKUP_${new Date().toISOString().slice(0,10)}.json`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast("BACKUP SAVED");
-        };
-
-        $('restore-btn').onclick = () => $('restore-file').click();
-        $('restore-file').onchange = (e) => {
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    if(data.products) { state = {...state, ...data}; sync(); location.reload(); }
-                } catch(e) { showToast("INVALID FILE"); }
-            };
-            reader.readAsText(file);
-        };
-
-        const sync = () => {
-            localStorage.setItem('products', JSON.stringify(state.products));
-            localStorage.setItem('invoices', JSON.stringify(state.invoices));
-            renderDash(); renderManage();
-        };
-
-        const renderDash = () => {
-            const term = $('search-bar').value.toLowerCase();
-            const filtered = state.products.filter(p => p.name.toLowerCase().includes(term));
-            const totalVal = state.products.reduce((a,b) => a + (b.price*b.qty), 0);
-            $('total-val-display').textContent = `VAL: ${formatMoney(totalVal)}`;
-            
-            $('top-list').innerHTML = filtered.slice(0,5).map(p => `
-                <div class="list-item"><div><b>${p.name}</b></div><div class="price">${formatMoney(p.price)}</div></div>
-            `).join('');
-
-            $('main-list').innerHTML = filtered.map(p => `
-                <div class="product-card ${p.qty<5?'low-stock':''}">
-                    <div style="font-weight:bold; margin-bottom:5px;">${p.name}</div>
-                    <div style="font-size:0.8rem; opacity:0.7;">CODE: ${p.code || 'N/A'}</div>
-                    <div style="display:flex; justify-content:space-between; margin-top:10px;">
-                        <span class="price">${formatMoney(p.price)}</span>
-                        <span>QTY: ${p.qty}</span>
-                    </div>
-                    <button onclick="editProd(${p.id})" style="width:100%; margin-top:10px; border:1px solid var(--text-color);">EDIT</button>
-                </div>
-            `).join('');
-        };
-        $('search-bar').oninput = renderDash;
-
-        // --- INVENTORY MANAGEMENT ---
-        const renderManage = () => {
-            const list = $('manage-list-container');
-            if(state.products.length === 0) {
-                list.innerHTML = '<p style="text-align:center; padding:20px; opacity:0.6;">NO INVENTORY FOUND.</p>';
-                return;
-            }
-            list.innerHTML = state.products.map(p => `
-                <div class="list-item">
-                    <div style="flex:1;">
-                        <div style="font-weight:bold;">${p.name}</div>
-                        <div style="font-size:0.8rem; opacity:0.7;">${p.code || 'NO CODE'} | QTY: ${p.qty}</div>
-                    </div>
-                    <div style="text-align:right; display:flex; gap:10px; align-items:center;">
-                        <span class="price" style="margin-right:10px;">${formatMoney(p.price)}</span>
-                        <button class="small-btn" onclick="editProd(${p.id})">EDIT</button>
-                        <button class="small-btn danger" onclick="deleteProduct(${p.id})">DELETE</button>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        window.deleteProduct = (id) => {
-            if(confirm("PERMANENTLY DELETE THIS ITEM?")) {
-                state.products = state.products.filter(p => p.id !== id);
-                sync(); playSound('click'); showToast("PRODUCT DELETED");
-            }
-        };
-
-        window.openModal = () => { $('prod-modal').classList.remove('hidden'); $('p-id').value=''; $('p-name').value=''; $('p-qty').value=''; $('p-price').value=''; $('p-code').value=''; $('p-cat').value=''; };
-        window.closeModal = () => $('prod-modal').classList.add('hidden');
-        
-        window.saveProduct = () => {
-            const id = $('p-id').value;
-            const p = {
-                id: id ? parseInt(id) : Date.now(),
-                name: $('p-name').value,
-                code: $('p-code').value,
-                cat: $('p-cat').value,
-                price: parseFloat($('p-price').value),
-                qty: parseInt($('p-qty').value)
-            };
-            if(!p.name || isNaN(p.price) || isNaN(p.qty)) return playSound('error');
-            
-            if(id) state.products = state.products.map(x => x.id == id ? p : x);
-            else state.products.push(p);
-            
-            sync(); closeModal(); playSound('success'); showToast("ITEM SAVED");
-        };
-        window.editProd = (id) => {
-            const p = state.products.find(x => x.id == id);
-            $('p-id').value = p.id; $('p-name').value = p.name; $('p-price').value = p.price; $('p-qty').value = p.qty; $('p-code').value = p.code || ''; $('p-cat').value = p.cat || '';
-            $('prod-modal').classList.remove('hidden');
-        };
-
-        // --- INVOICE & KEYBOARD NAV ---
-        $('inv-search').oninput = (e) => {
-            const v = e.target.value.toLowerCase();
-            currentSearchResults = state.products.filter(p => p.name.toLowerCase().includes(v));
-            searchIndex = -1; // Reset index on new input
-            renderSearchResults(v);
-        };
-
-        // Keyboard Navigation for Dropdown
-        $('inv-search').addEventListener('keydown', (e) => {
-            const resultsDiv = $('inv-results');
-            if(resultsDiv.style.display === 'none') return;
-
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                searchIndex++;
-                if (searchIndex >= currentSearchResults.length) searchIndex = 0;
-                highlightResult();
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                searchIndex--;
-                if (searchIndex < 0) searchIndex = currentSearchResults.length - 1;
-                highlightResult();
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                if (searchIndex > -1 && currentSearchResults[searchIndex]) {
-                    addInvItem(currentSearchResults[searchIndex].id);
-                }
-            }
-        });
-
-        const renderSearchResults = (v) => {
-            const div = $('inv-results');
-            if(v && currentSearchResults.length) {
-                div.style.display = 'block';
-                div.innerHTML = currentSearchResults.map((p, index) => `
-                    <div class="search-result-item" id="res-${index}" onclick="addInvItem(${p.id})">
-                        <span>${p.name}</span> <b>${p.qty}</b>
-                    </div>
-                `).join('');
-            } else {
-                div.style.display = 'none';
-            }
-        };
-
-        const highlightResult = () => {
-            const items = document.querySelectorAll('.search-result-item');
-            items.forEach(i => i.classList.remove('highlight'));
-            const active = document.getElementById(`res-${searchIndex}`);
-            if(active) {
-                active.classList.add('highlight');
-                active.scrollIntoView({ block: 'nearest' });
-            }
-        };
-
-        // --- UPDATED ADD ITEM FUNCTION WITH LOW STOCK CHECK ---
-        window.addInvItem = (id) => {
-            const p = state.products.find(x => x.id == id);
-            const qtyInput = parseInt($('inv-qty').value);
-
-            // Validation
-            if(qtyInput <= 0 || isNaN(qtyInput)) return showToast("INVALID QTY");
-
-            // Check if existing in cart to calculate total proposed qty
-            const existingInCart = state.cart.find(x => x.id == id);
-            const currentCartQty = existingInCart ? existingInCart.qty : 0;
-            
-            // LOW PRODUCT ERROR CHECK
-            if ((currentCartQty + qtyInput) > p.qty) {
-                playSound('error');
-                showToast("ERROR: LOW PRODUCT");
-                return; // Stop execution here
-            }
-
-            // Proceed if stock is sufficient
-            if(existingInCart) existingInCart.qty += qtyInput;
-            else state.cart.push({id, qty: qtyInput});
-
-            // Cleanup
-            $('inv-search').value = ''; 
-            $('inv-results').style.display='none';
-            searchIndex = -1;
-            renderCart();
-        };
-
-        window.renderCart = () => {
-            let total = 0;
-            $('cart-list').innerHTML = state.cart.map(i => {
-                const p = state.products.find(x => x.id == i.id);
-                const itemTotal = p.price * i.qty; total += itemTotal;
-                return `<div class="list-item"><div>${p.name} <span style="font-size:0.8rem">x${i.qty}</span></div><div style="font-weight:bold; font-family:var(--font-mono)">${formatMoney(itemTotal)}</div></div>`;
-            }).join('');
-            $('cart-total').textContent = formatMoney(total);
-        };
-        window.clearInvoice = () => { state.cart=[]; renderCart(); $('inv-cust').value=''; $('inv-phone').value=''; };
-
-        $('save-inv').onclick = () => {
-            if(!state.cart.length) return playSound('error');
-            const total = parseFloat($('cart-total').textContent);
-            state.cart.forEach(c => state.products.find(x => x.id == c.id).qty -= c.qty);
-            state.invoices.push({ id: Date.now(), date: new Date().toISOString(), cust: $('inv-cust').value, total, items: state.cart });
-            state.cart = []; sync(); renderCart(); $('inv-cust').value=''; renderHistory(); 
-            confetti({ particleCount: 150, spread: 70, colors: ['#000000', '#444444', '#888888', '#ffffff'] });
-            playSound('success'); showToast("SALE RECORDED");
-        };
-
-        // WhatsApp Share
-        $('whatsapp-share').onclick = () => {
-            const phone = $('inv-phone').value.replace(/\D/g, '');
-            if (!phone) return showToast("ENTER PHONE NUMBER");
-            if (!state.cart.length) return showToast("CART EMPTY");
-            let msg = `*INVOICE*\nDate: ${new Date().toLocaleDateString()}\nCustomer: ${$('inv-cust').value||'Valued Customer'}\n\n`;
-            let total = 0;
-            state.cart.forEach(c => {
-                const p = state.products.find(x => x.id == c.id);
-                const t = p.price * c.qty; total += t;
-                msg += `${c.qty} x ${p.name} = ${formatMoney(t)}\n`;
-            });
-            msg += `\n*TOTAL: ${formatMoney(total)}*`;
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        };
-
-        // --- HISTORY & PDFS ---
-        const renderHistory = () => {
-            const list = document.getElementById('hist-list'); list.innerHTML = '';
-            if(state.invoices.length === 0) { list.innerHTML = '<p style="text-align:center; opacity:0.5;">NO HISTORY</p>'; return; }
-            [...state.invoices].reverse().forEach(inv => {
-                const item = document.createElement('div'); item.className = 'list-item';
-                item.innerHTML = `
-                    <div><div style="font-weight:bold;">${new Date(inv.date).toLocaleString()}</div><div style="font-size:0.8rem; opacity:0.7;">ID: ${inv.id}</div></div>
-                    <div style="text-align:right"><div style="font-weight:bold;">${inv.cust || 'N/A'}</div><div class="price">${formatMoney(inv.total)}</div></div>`;
-                list.appendChild(item);
-            });
-        };
-
-        window.confirmClearHistory = () => {
-            if(confirm("DELETE ALL HISTORY?")) { state.invoices = []; sync(); renderHistory(); renderChart(); showToast("HISTORY CLEARED"); }
-        };
-
-        // PDF GENERATION FUNCTIONS
-        window.generateInventoryPDF = () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFont("courier");
-            doc.setFontSize(16);
-            doc.text("INVENTORY REPORT", 105, 15, { align: "center" });
-            doc.setFontSize(10);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 22, { align: "center" });
-            doc.line(10, 25, 200, 25);
-            
-            let y = 35;
-            doc.text("ITEM NAME", 10, y);
-            doc.text("CODE", 100, y);
-            doc.text("QTY", 140, y);
-            doc.text("PRICE", 170, y);
-            y += 5;
-            doc.line(10, y, 200, y);
-            y += 7;
-
-            state.products.forEach(p => {
-                if(y > 280) { doc.addPage(); y = 20; }
-                doc.text(p.name.substring(0, 35), 10, y);
-                doc.text(p.code || "-", 100, y);
-                doc.text(p.qty.toString(), 140, y);
-                doc.text(p.price.toFixed(2), 170, y);
-                y += 7;
-            });
-
-            doc.save("INVENTORY_FULL_LIST.pdf");
-            showToast("PDF SAVED");
-        };
-
-        window.generateHistoryPDF = () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFont("courier");
-            doc.setFontSize(16);
-            doc.text("SALES LOG REPORT", 105, 15, { align: "center" });
-            doc.setFontSize(10);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 22, { align: "center" });
-            doc.line(10, 25, 200, 25);
-
-            let y = 35;
-            doc.text("DATE", 10, y);
-            doc.text("CUSTOMER", 80, y);
-            doc.text("ITEMS", 140, y);
-            doc.text("TOTAL", 180, y);
-            y += 5;
-            doc.line(10, y, 200, y);
-            y += 7;
-
-            // Reverse to show newest first for PDF too
-            [...state.invoices].reverse().forEach(inv => {
-                if(y > 280) { doc.addPage(); y = 20; }
-                const dateStr = new Date(inv.date).toLocaleDateString();
-                const itemCount = inv.items.reduce((a, b) => a + b.qty, 0);
-                
-                doc.text(dateStr, 10, y);
-                doc.text((inv.cust || "Guest").substring(0, 20), 80, y);
-                doc.text(itemCount.toString(), 140, y);
-                doc.text(inv.total.toFixed(2), 180, y);
-                y += 7;
-            });
-            
-            const grandTotal = state.invoices.reduce((a,b) => a+b.total, 0);
-            doc.line(10, y, 200, y);
-            y += 10;
-            doc.setFontSize(12);
-            doc.text(`GRAND TOTAL REVENUE: ${grandTotal.toFixed(2)}`, 10, y);
-
-            doc.save("SALES_HISTORY_LOG.pdf");
-            showToast("PDF SAVED");
-        };
-
-        // Chart
-        const renderChart = () => {
-            if(chartInstance) chartInstance.destroy();
-            const ctx = $('salesChart').getContext('2d');
-            const dates = state.invoices.map(i => new Date(i.date).toLocaleDateString()).slice(-7);
-            const totals = state.invoices.map(i => i.total).slice(-7);
-            const color = state.theme === 'dark' ? '#ffffff' : '#000000';
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: { labels: dates.length?dates:['NONE'], datasets: [{ label: 'REVENUE', data: totals.length?totals:[0], borderColor: color, backgroundColor: 'transparent', borderWidth: 2, tension: 0.1, pointBackgroundColor: color }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: color }, grid: { color: state.theme === 'dark'?'#333':'#ddd' } }, x: { ticks: { color: color }, grid: { display: false } } }, plugins: { legend: { labels: { color: color, font: { family: 'Inter' } } } } }
-            });
-        };
-
-        // Shortcuts & Reset
-        window.resetSoftware = () => {
-            if(confirm("DANGER: DELETE ALL DATA?")) { localStorage.clear(); location.reload(); }
-        };
-        $('shortcuts-btn').onclick = () => $('shortcuts-modal').classList.remove('hidden');
-        document.addEventListener('keydown', e => {
-            if(!$('login-screen').classList.contains('hidden') || !$('lock-overlay').classList.contains('hidden')) return;
-            if(e.shiftKey) {
-                if(e.key==='F' && !$('invoice').classList.contains('hidden')) $('save-inv').click();
-                if(e.key==='W' && !$('invoice').classList.contains('hidden')) $('whatsapp-share').click();
-                if(e.key==='L') $('lock-btn').click();
-                if(e.key==='Q') resetSoftware();
-                if(e.key==='P' && !$('products').classList.contains('hidden')) openModal();
-            } else if(e.key==='/') { e.preventDefault(); $('search-bar').focus(); }
-        });
-
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; $('toast-container').appendChild(t); setTimeout(()=>t.remove(), 3000); }
-
-        renderDash(); renderHistory();
-    </script>
 </body>
 </html>
